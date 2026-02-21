@@ -49,6 +49,6 @@ initDb().then(() => {
         console.log(`Server running on port ${PORT}`);
     });
 }).catch(err => {
-    console.error('Failed to start server due to DB error');
+    console.error('Failed to start server due to DB error:', err.message || err);
     process.exit(1);
 });

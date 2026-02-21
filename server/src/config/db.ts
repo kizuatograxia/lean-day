@@ -3,17 +3,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+if (!process.env.DATABASE_URL) {
+  console.error('CRITICAL ERROR: DATABASE_URL is missing in environment variables.');
+} else if (process.env.DATABASE_URL.includes('localhost') && process.env.NODE_ENV === 'production') {
+  console.warn('WARNING: DATABASE_URL points to localhost in a production environment. This will likely fail.');
+}
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
 });
 
 export const initDb = async () => {
-    const client = await pool.connect();
-    try {
-        console.log('Initializing database tables...');
+  const client = await pool.connect();
+  try {
+    console.log('Initializing database tables...');
 
-        // Create Users table
-        await client.query(`
+    // Create Users table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         email TEXT UNIQUE NOT NULL,
@@ -31,8 +37,8 @@ export const initDb = async () => {
       );
     `);
 
-        // Create Week History table
-        await client.query(`
+    // Create Week History table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS week_history (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -48,13 +54,13 @@ export const initDb = async () => {
       );
     `);
 
-        console.log('Database tables initialized successfully.');
-    } catch (err) {
-        console.error('Error initializing database:', err);
-        throw err;
-    } finally {
-        client.release();
-    }
+    console.log('Database tables initialized successfully.');
+  } catch (err) {
+    console.error('Error initializing database:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
 };
 
 export default pool;
