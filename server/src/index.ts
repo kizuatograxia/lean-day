@@ -16,6 +16,7 @@ import historyRoutes from './routes/history';
 import { initDb } from './config/db';
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
