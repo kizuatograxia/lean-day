@@ -146,11 +146,10 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
               <button
                 key={e}
                 onClick={() => setEmotion(prev => prev === e ? "" : e)}
-                className={`h-10 rounded-lg border text-sm font-medium transition-all ${
-                  emotion === e
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-foreground hover:border-primary/40"
-                }`}
+                className={`h-10 rounded-lg border text-sm font-medium transition-all ${emotion === e
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-card text-foreground hover:border-primary/40"
+                  }`}
               >
                 {e}
               </button>
@@ -166,7 +165,6 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
     return (
       <div className="space-y-5 pb-6">
         <div className="space-y-1">
-          <h2 className="text-lg font-bold">Dia Livre</h2>
           <p className="text-sm text-muted-foreground">Registre o consumo completo do seu dia especial.</p>
         </div>
 
@@ -194,11 +192,10 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
                 <button
                   key={opt.value}
                   onClick={() => setMeals(prev => ({ ...prev, [key]: opt.value }))}
-                  className={`px-3 py-2.5 rounded-lg border text-xs font-medium transition-all ${
-                    meals[key] === opt.value
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-secondary/40 text-foreground hover:border-primary/40"
-                  }`}
+                  className={`px-3 py-2.5 rounded-lg border text-xs font-medium transition-all ${meals[key] === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-secondary/40 text-foreground hover:border-primary/40"
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -227,7 +224,6 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
   return (
     <div className="space-y-5 pb-6">
       <div className="space-y-1">
-        <h2 className="text-lg font-bold">Dia Livre</h2>
         <p className="text-sm text-muted-foreground">Registre o consumo completo do seu dia especial.</p>
       </div>
 

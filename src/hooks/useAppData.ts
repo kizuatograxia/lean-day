@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
+import api from "@/lib/api";
 
 export interface UserData {
+  id?: string;
+  email?: string;
+  name?: string;
   weight: number;
   height: number;
   age: number;
   sex: "male" | "female";
   activityLevel: "sedentary" | "light" | "moderate" | "active";
   weeklyGoal: 0.25 | 0.5 | 0.75;
+  isActivated?: boolean;
 }
 
 export interface WeekHistory {
@@ -44,7 +49,7 @@ export interface CalcResults {
   dailyFreeDay: number;
 }
 
-const ACTIVITY_FACTORS: Record<UserData["activityLevel"], number> = {
+const ACTIVITY_FACTORS: Record<string, number> = {
   sedentary: 1.2,
   light: 1.375,
   moderate: 1.55,
@@ -64,10 +69,20 @@ const MEAL_ESTIMATES: Record<string, number> = {
   high: 800,
 };
 
+export function getMealKcal(option: string): number {
+  return MEAL_ESTIMATES[option] ?? 0;
+}
+
+export function getClassification(consumed: number, margin: number): "green" | "yellow" | "red" {
+  const diff = consumed - margin;
+  if (diff <= 0) return "green";
+  if (diff <= 300) return "yellow";
+  return "red";
+}
+
 export function calculateResults(userData: UserData): CalcResults {
   const { weight, height, age, sex, activityLevel, weeklyGoal } = userData;
-  
-  // Mifflin-St Jeor
+
   let tmb: number;
   if (sex === "male") {
     tmb = 10 * weight + 6.25 * height - 5 * age + 5;
@@ -75,14 +90,9 @@ export function calculateResults(userData: UserData): CalcResults {
     tmb = 10 * weight + 6.25 * height - 5 * age - 161;
   }
 
-  const tdee = tmb * ACTIVITY_FACTORS[activityLevel];
+  const tdee = tmb * ACTIVITY_FACTORS[activityLevel as any];
   const weeklyTarget = tdee * 7 - WEEKLY_DEFICIT[String(weeklyGoal)];
-  
-  // 5 routine days + 1 free day
-  // Free day gets more margin, routine days get less
-  // weeklyTarget = 5 * dailyRoutine + 1 * dailyFreeDay
-  // dailyFreeDay = tdee + (tdee - dailyRoutine) * 1 (redistribute)
-  // Simple approach: give free day = tdee + weekly surplus from routine days
+
   const dailyRoutine = (weeklyTarget - tdee) / 6;
   const dailyFreeDay = weeklyTarget - 5 * dailyRoutine;
 
@@ -96,71 +106,100 @@ export function calculateResults(userData: UserData): CalcResults {
   };
 }
 
-export function getMealKcal(option: string): number {
-  return MEAL_ESTIMATES[option] ?? 0;
-}
-
-export function getClassification(consumed: number, margin: number): "green" | "yellow" | "red" {
-  const diff = consumed - margin;
-  if (diff <= 0) return "green";
-  if (diff <= 300) return "yellow";
-  return "red";
-}
-
 export function useAppData() {
-  const [userData, setUserData] = useState<UserData | null>(() => {
-    const stored = localStorage.getItem("anti_sabotagem_user");
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [userData, setUserDataState] = useState<UserData | null>(null);
+  const [history, setHistory] = useState<WeekHistory[]>([]);
+  const [currentMealsData, setCurrentMealsData] = useState<MealsData | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [history, setHistory] = useState<WeekHistory[]>(() => {
-    const stored = localStorage.getItem("anti_sabotagem_history");
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [currentMealsData, setCurrentMealsData] = useState<MealsData | null>(() => {
-    const stored = localStorage.getItem("anti_sabotagem_current_meals");
-    return stored ? JSON.parse(stored) : null;
-  });
-
-  useEffect(() => {
-    if (userData) {
-      localStorage.setItem("anti_sabotagem_user", JSON.stringify(userData));
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get("/user/profile");
+      const user = response.data;
+      if (user.isActivated) {
+        setUserDataState(user);
+      } else {
+        setUserDataState(user); // Still set it so we know we have a user but not activated
+      }
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Failed to fetch user data", error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
-  }, [userData]);
-
-  useEffect(() => {
-    localStorage.setItem("anti_sabotagem_history", JSON.stringify(history));
-  }, [history]);
-
-  useEffect(() => {
-    if (currentMealsData) {
-      localStorage.setItem("anti_sabotagem_current_meals", JSON.stringify(currentMealsData));
-    }
-  }, [currentMealsData]);
-
-  const calcResults = userData ? calculateResults(userData) : null;
-
-  const saveWeek = (entry: Omit<WeekHistory, "id" | "weekNumber" | "date">) => {
-    const newEntry: WeekHistory = {
-      ...entry,
-      id: Date.now().toString(),
-      weekNumber: history.length + 1,
-      date: new Date().toLocaleDateString("pt-BR"),
-    };
-    setHistory(prev => [newEntry, ...prev]);
-    localStorage.removeItem("anti_sabotagem_current_meals");
-    setCurrentMealsData(null);
   };
 
-  const updateHistoryEntry = (id: string, updates: Partial<WeekHistory>) => {
-    setHistory(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+  const fetchHistory = async () => {
+    try {
+      const response = await api.get("/history");
+      setHistory(response.data);
+    } catch (error) {
+      console.error("Failed to fetch history", error);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      fetchUserData();
+      fetchHistory();
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const setUserData = async (data: UserData) => {
+    try {
+      const response = await api.post("/user/activate", data);
+      setUserDataState(response.data);
+    } catch (error) {
+      console.error("Failed to activate user", error);
+    }
+  };
+
+  const saveWeek = async (entry: Omit<WeekHistory, "id" | "weekNumber" | "date">) => {
+    try {
+      const response = await api.post("/history", {
+        ...entry,
+        weekNumber: history.length + 1,
+        date: new Date().toLocaleDateString("pt-BR"),
+      });
+      setHistory(prev => [response.data, ...prev]);
+      setCurrentMealsData(null);
+    } catch (error) {
+      console.error("Failed to save week", error);
+    }
+  };
+
+  const updateHistoryEntry = async (id: string, updates: Partial<WeekHistory>) => {
+    try {
+      const response = await api.put(`/history/${id}`, updates);
+      setHistory(prev => prev.map(h => h.id === id ? response.data : h));
+    } catch (error) {
+      console.error("Failed to update history entry", error);
+    }
   };
 
   const startNewWeek = () => {
-    localStorage.removeItem("anti_sabotagem_current_meals");
     setCurrentMealsData(null);
   };
+
+  const loginWithGoogle = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    window.location.href = `${apiUrl}/auth/google`;
+  };
+
+  const logout = () => {
+    localStorage.removeItem("auth_token");
+    setIsAuthenticated(false);
+    setUserDataState(null);
+    setHistory([]);
+    window.location.reload();
+  };
+
+  const calcResults = userData && userData.isActivated ? calculateResults(userData) : null;
 
   return {
     userData,
@@ -172,5 +211,9 @@ export function useAppData() {
     startNewWeek,
     currentMealsData,
     setCurrentMealsData,
+    isAuthenticated,
+    isLoading,
+    loginWithGoogle,
+    logout,
   };
 }

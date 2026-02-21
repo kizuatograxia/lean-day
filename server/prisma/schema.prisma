@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  name            String?
+  googleId        String         @unique
+  isActivated     Boolean        @default(false)
+  
+  // User Data (for health calculations)
+  weight          Float?
+  height          Float?
+  age             Int?
+  sex             String?        // "male" | "female"
+  activityLevel   String?        // "sedentary" | "light" | "moderate" | "active"
+  weeklyGoal      Float?         // 0.25 | 0.5 | 0.75
+  
+  // Relations
+  history         WeekHistory[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model WeekHistory {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  weekNumber      Int
+  date            String
+  totalConsumed   Int
+  margin          Int
+  classification  String    // "green" | "yellow" | "red"
+  emotion         String?
+  weekQuality     String?   // "followed" | "small_deviations" | "lost_control"
+  
+  // Store JSON meals data
+  mealsData       Json?
+  
+  createdAt       DateTime  @default(now())
+}

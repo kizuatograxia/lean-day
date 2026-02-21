@@ -1,0 +1,43 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import passport from 'passport';
+import path from 'path';
+import authRoutes from './routes/auth';
+import userRoutes from './routes/user';
+import historyRoutes from './routes/history';
+import './config/passport';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+app.use(passport.initialize());
+
+// API Routes
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
+app.use('/history', historyRoutes);
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
+// Serve frontend static files in production
+const frontendPath = path.join(__dirname, '../../dist');
+app.use(express.static(frontendPath));
+
+// Fallback to index.html for SPA routing
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/auth') || req.path.startsWith('/user') || req.path.startsWith('/history') || req.path.startsWith('/health')) {
+        return res.status(404).json({ error: 'Not found' });
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
