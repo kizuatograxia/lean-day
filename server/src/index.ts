@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { setupPassport } from './config/passport';
 
 // Initialize Passport with environment check
