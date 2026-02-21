@@ -1,9 +1,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { setupPassport } from './config/passport';
+
 console.log('--- Environment Debug ---');
 console.log('All available env keys:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('DATABASE')));
 console.log('-------------------------');
+
+// Initialize Passport with environment check
+setupPassport();
 
 import express from 'express';
 import cors from 'cors';
@@ -13,7 +18,6 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import historyRoutes from './routes/history';
 import { initDb } from './config/db';
-import './config/passport';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
