@@ -14,8 +14,9 @@ router.get(
         const token = signToken({ id: user.id });
 
         // Redirect to frontend with token
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}/auth-callback?token=${token}&isActivated=${user.is_activated}`);
+        const frontendUrl = process.env.FRONTEND_URL || '';
+        const redirectPath = `${frontendUrl}/auth-callback?token=${token}&isActivated=${user.is_activated}`;
+        res.redirect(redirectPath);
     }
 );
 
