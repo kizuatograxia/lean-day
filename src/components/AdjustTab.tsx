@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { UserData, CalcResults } from "@/hooks/useAppData";
 import { SetupForm } from "@/components/SetupForm";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 interface AdjustTabProps {
   userData: UserData;
@@ -35,7 +35,6 @@ export function AdjustTab({ userData, calcResults, onSave }: AdjustTabProps) {
         <p className="text-sm text-muted-foreground">Alterações recalculam automaticamente sua margem.</p>
       </div>
 
-      {/* Quick adjust */}
       <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Peso atual (kg)</label>
@@ -64,6 +63,14 @@ export function AdjustTab({ userData, calcResults, onSave }: AdjustTabProps) {
               </button>
             ))}
           </div>
+          {quickGoal === "0.75" && (
+            <div className="flex items-start gap-2 bg-[hsl(var(--zone-yellow-bg))] border border-[hsl(var(--zone-yellow)/0.3)] rounded-lg p-3 mt-1">
+              <AlertTriangle className="h-4 w-4 text-[hsl(var(--zone-yellow))] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-[hsl(var(--zone-yellow))]">
+                Déficits mais altos podem dificultar a consistência ao longo das semanas.
+              </p>
+            </div>
+          )}
         </div>
 
         <button
@@ -74,7 +81,6 @@ export function AdjustTab({ userData, calcResults, onSave }: AdjustTabProps) {
         </button>
       </div>
 
-      {/* Summary of current calc */}
       <div className="bg-secondary/40 rounded-xl p-4 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Valores calculados</p>
         <div className="flex justify-between text-sm">
@@ -87,7 +93,6 @@ export function AdjustTab({ userData, calcResults, onSave }: AdjustTabProps) {
         </div>
       </div>
 
-      {/* Edit full data */}
       <div>
         <button
           onClick={() => setShowFull(!showFull)}

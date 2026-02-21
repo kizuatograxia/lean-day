@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { WeekHistory } from "@/hooks/useAppData";
 import { Pencil, Plus } from "lucide-react";
 
@@ -14,7 +13,22 @@ const ZONE_CONFIG = {
   red: { label: "Fora do planejado", bg: "zone-red", emoji: "🔴" },
 };
 
+const ZONE_SUMMARIES = {
+  green: "Dentro da margem estratégica.",
+  yellow: "Levemente acima, mas dentro da média.",
+  red: "Acima da margem. Pequenos ajustes resolvem.",
+};
+
+function getConsistency(history: WeekHistory[]): number | null {
+  const last4 = history.slice(0, 4);
+  if (last4.length === 0) return null;
+  const greenCount = last4.filter(h => h.classification === "green").length;
+  return Math.round((greenCount / last4.length) * 100);
+}
+
 export function HistoryTab({ history, onNewWeek, onEditWeek }: HistoryTabProps) {
+  const consistency = getConsistency(history);
+
   if (history.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -46,9 +60,20 @@ export function HistoryTab({ history, onNewWeek, onEditWeek }: HistoryTabProps) 
         </button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Subtítulo explicativo sobre o histórico de semanas.
-      </p>
+      {/* Consistency indicator */}
+      {consistency !== null && (
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Consistência nas últimas {Math.min(4, history.length)} semanas</p>
+            <p className="text-xl font-bold text-foreground">{consistency}%</p>
+          </div>
+          <div className="flex gap-1">
+            {history.slice(0, 4).reverse().map((h, i) => (
+              <span key={i} className="text-sm">{ZONE_CONFIG[h.classification].emoji}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         {history.map(entry => {
@@ -75,7 +100,6 @@ export function HistoryTab({ history, onNewWeek, onEditWeek }: HistoryTabProps) 
                 </div>
               </div>
 
-              {/* Diff */}
               {isBelow && (
                 <p className="text-sm font-medium text-primary">
                   −{Math.abs(diff).toLocaleString()} kcal dentro da margem
@@ -87,7 +111,6 @@ export function HistoryTab({ history, onNewWeek, onEditWeek }: HistoryTabProps) 
                 </p>
               )}
 
-              {/* Badge */}
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold ${zone.bg}`}>
                   {zone.emoji} {zone.label}
@@ -99,7 +122,11 @@ export function HistoryTab({ history, onNewWeek, onEditWeek }: HistoryTabProps) 
                 )}
               </div>
 
-              {/* Margem info */}
+              {/* Summary text */}
+              <p className="text-xs text-muted-foreground italic">
+                {ZONE_SUMMARIES[entry.classification]}
+              </p>
+
               <div className="text-xs text-muted-foreground">
                 Margem da semana: {entry.margin.toLocaleString()} kcal
               </div>
