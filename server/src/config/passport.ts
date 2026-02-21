@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import prisma from './prisma';
+import pool from './db';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,19 +14,22 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await prisma.user.findUnique({
-                    where: { googleId: profile.id },
-                });
+                // Find user by google_id
+                const res = await pool.query('SELECT * FROM users WHERE google_id = $1', [profile.id]);
+                let user = res.rows[0];
 
                 if (!user) {
-                    user = await prisma.user.create({
-                        data: {
-                            googleId: profile.id,
-                            email: profile.emails?.[0].value || '',
-                            name: profile.displayName,
-                            isActivated: false,
-                        },
-                    });
+                    // Create user if not exists
+                    const insertRes = await pool.query(
+                        'INSERT INTO users (google_id, email, name, is_activated) VALUES ($1, $2, $3, $4) RETURNING *',
+                        [
+                            profile.id,
+                            profile.emails?.[0].value || '',
+                            profile.displayName,
+                            false
+                        ]
+                    );
+                    user = insertRes.rows[0];
                 }
 
                 return done(null, user);
@@ -37,14 +40,14 @@ passport.use(
     )
 );
 
-// We won't use sessions, but we need these for passport types if using certain middlewares
 passport.serializeUser((user: any, done) => {
     done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
     try {
-        const user = await prisma.user.findUnique({ where: { id } });
+        const res = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        const user = res.rows[0];
         done(null, user);
     } catch (error) {
         done(error);

@@ -6,6 +6,7 @@ import path from 'path';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import historyRoutes from './routes/history';
+import { initDb } from './config/db';
 import './config/passport';
 
 dotenv.config();
@@ -38,6 +39,12 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Initialize database and start server
+initDb().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to start server due to DB error');
+    process.exit(1);
 });
