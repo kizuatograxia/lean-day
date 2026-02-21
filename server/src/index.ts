@@ -36,7 +36,7 @@ const frontendPath = path.join(__dirname, '../../dist');
 app.use(express.static(frontendPath));
 
 // Fallback to index.html for SPA routing
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
     if (req.path.startsWith('/auth') || req.path.startsWith('/user') || req.path.startsWith('/history') || req.path.startsWith('/health')) {
         return res.status(404).json({ error: 'Not found' });
     }
