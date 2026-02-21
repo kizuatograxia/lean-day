@@ -1,11 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import { setupPassport } from './config/passport';
-
-console.log('--- Environment Debug ---');
-console.log('All available env keys:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('DATABASE')));
-console.log('-------------------------');
 
 // Initialize Passport with environment check
 setupPassport();
