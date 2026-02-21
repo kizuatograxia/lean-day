@@ -1,6 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import passport from 'passport';
 import path from 'path';
 import authRoutes from './routes/auth';
@@ -8,8 +10,6 @@ import userRoutes from './routes/user';
 import historyRoutes from './routes/history';
 import { initDb } from './config/db';
 import './config/passport';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
