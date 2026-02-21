@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CalcResults, MealsData, FoodItem, getClassification, getMealKcal } from "@/hooks/useAppData";
 import { Plus, Minus, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 
 interface FreeDayTabProps {
   calcResults: CalcResults;
@@ -11,9 +12,9 @@ interface FreeDayTabProps {
 
 const MEAL_OPTIONS = [
   { value: "not_consumed", label: "Não consumi", kcal: 0 },
-  { value: "light", label: "Leve (similar à rotina)", kcal: 350 },
-  { value: "moderate", label: "Moderado (maior que a rotina)", kcal: 550 },
-  { value: "high", label: "Alto (bem maior que a rotina)", kcal: 800 },
+  { value: "light", label: "Igual à rotina", kcal: 350 },
+  { value: "moderate", label: "Um pouco a mais", kcal: 550 },
+  { value: "high", label: "Bem acima do normal", kcal: 800 },
 ];
 
 const FOOD_ITEMS: FoodItem[] = [
@@ -58,12 +59,6 @@ const RESULT_MESSAGES = {
   red: "Essa semana exigirá compensação estratégica.",
 };
 
-interface FreeDayTabProps {
-  calcResults: CalcResults;
-  onFinalize: (data: { totalConsumed: number; classification: "green" | "yellow" | "red"; weekQuality: string; mealsData: MealsData; emotion?: string }) => void;
-  initialData?: MealsData | null;
-}
-
 export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabProps) {
   const [step, setStep] = useState<"week" | "meals" | "result">(initialData ? "meals" : "week");
   const [weekQuality, setWeekQuality] = useState<string>(initialData ? "followed" : "");
@@ -88,6 +83,9 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
   const totalConsumed = mealKcal + eventKcal + extraKcal;
   const remainingMargin = adjustedMargin - totalConsumed;
   const classification = getClassification(totalConsumed, adjustedMargin);
+  const usagePercent = adjustedMargin > 0 ? Math.min(100, (totalConsumed / adjustedMargin) * 100) : 0;
+
+  const marginDiff = Math.round(calcResults.dailyFreeDay - adjustedMargin);
 
   const updateItemQty = (index: number, delta: number) => {
     setFoodItems(prev => prev.map((item, i) =>
@@ -116,6 +114,12 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
   const zoneEmoji = { green: "🟢", yellow: "🟡", red: "🔴" };
   const zoneLabel = { green: "Estratégico", yellow: "Atenção", red: "Fora do planejado" };
 
+  const getProgressColor = () => {
+    if (usagePercent >= 100) return "bg-destructive";
+    if (usagePercent >= 85) return "bg-[hsl(var(--zone-yellow))]";
+    return "bg-primary";
+  };
+
   if (finalized) {
     return (
       <div className="space-y-6 pb-6">
@@ -139,12 +143,11 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
           <div className="flex justify-between text-sm font-semibold border-t border-border pt-2 mt-2">
             <span>{remainingMargin >= 0 ? "Dentro da margem" : "Acima da margem"}</span>
             <span className={remainingMargin >= 0 ? "text-primary" : "text-destructive"}>
-              {remainingMargin >= 0 ? `-${remainingMargin.toLocaleString()}` : `+${Math.abs(remainingMargin).toLocaleString()}`} kcal
+              {remainingMargin >= 0 ? `−${remainingMargin.toLocaleString()}` : `+${Math.abs(remainingMargin).toLocaleString()}`} kcal
             </span>
           </div>
         </div>
 
-        {/* Adjustment suggestion */}
         {classification !== "green" && (
           <div className="bg-secondary/40 rounded-xl p-4 space-y-2">
             <p className="text-sm font-semibold">Ajuste sugerido</p>
@@ -159,7 +162,6 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
           </div>
         )}
 
-        {/* Emotion */}
         <div className="space-y-2">
           <p className="text-sm font-medium">Como você se sentiu no Dia Livre? <span className="text-muted-foreground">(opcional)</span></p>
           <div className="grid grid-cols-2 gap-2">
@@ -205,6 +207,16 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
                 {opt.emoji} {opt.title}
               </p>
               <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
+              {weekQuality === opt.value && opt.multiplier < 1.0 && (
+                <p className="text-xs text-primary/80 mt-1">
+                  Essa escolha ajusta sua margem do Dia Livre em −{Math.round(calcResults.dailyFreeDay * (1 - opt.multiplier))} kcal.
+                </p>
+              )}
+              {weekQuality === opt.value && opt.multiplier === 1.0 && (
+                <p className="text-xs text-primary/80 mt-1">
+                  Margem completa mantida.
+                </p>
+              )}
             </button>
           ))}
         </div>
@@ -222,16 +234,28 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Margin display */}
-      <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 text-center">
-        <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Margem total disponível</p>
-        <p className={`text-4xl font-bold transition-all duration-300 ${remainingMargin < 0 ? "text-destructive" : "text-primary"}`}>
-          {remainingMargin.toLocaleString()}
+      {/* Progress bar visual - main focus */}
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{usagePercent < 85 ? "🟢" : usagePercent < 100 ? "🟡" : "🔴"}</span>
+            <span className="text-sm font-semibold">
+              {usagePercent < 85 ? "Dentro do planejado" : usagePercent < 100 ? "Próximo do limite" : "Acima da margem"}
+            </span>
+          </div>
+        </div>
+        <div className="relative h-3 bg-secondary rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${getProgressColor()}`}
+            style={{ width: `${Math.min(usagePercent, 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          {remainingMargin >= 0
+            ? `${remainingMargin.toLocaleString()} kcal restantes`
+            : `${Math.abs(remainingMargin).toLocaleString()} kcal acima da margem`
+          }
         </p>
-        <p className="text-xs text-primary/70 mt-0.5">kcal restantes</p>
-        {remainingMargin < 0 && (
-          <p className="text-xs text-destructive font-medium mt-1">Você ultrapassou sua margem estratégica.</p>
-        )}
       </div>
 
       {/* Refeições do dia */}
@@ -301,7 +325,6 @@ export function FreeDayTab({ calcResults, onFinalize, initialData }: FreeDayTabP
           ))}
         </div>
 
-        {/* Custom */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium">Alimento personalizado</p>
           <Input
