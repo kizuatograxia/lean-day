@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+console.log('--- Environment Debug ---');
+console.log('All available env keys:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('DATABASE')));
+console.log('-------------------------');
+
 import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
