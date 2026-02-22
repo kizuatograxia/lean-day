@@ -38,7 +38,10 @@ app.use(express.static(frontendPath));
 
 // Fallback to index.html for SPA routing
 app.use((req, res) => {
-    if (req.path.startsWith('/auth') || req.path.startsWith('/user') || req.path.startsWith('/history') || req.path.startsWith('/health')) {
+    const apiPathPrefixes = ['/auth/', '/user/', '/history/', '/health'];
+    const isApiRoute = apiPathPrefixes.some(prefix => req.path === prefix || req.path.startsWith(prefix + '/'));
+
+    if (isApiRoute) {
         return res.status(404).json({ error: 'Not found' });
     }
     res.sendFile(path.join(frontendPath, 'index.html'));
