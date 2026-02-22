@@ -12,7 +12,7 @@ export const Login = ({ onLogin }: LoginProps) => {
                     <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
                         <Leaf className="h-8 w-8 text-primary-foreground" />
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Viva sua vida</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Lean Day</h1>
                     <p className="text-muted-foreground">Sempre no controle, inclusive nos dias livres.</p>
                 </div>
 
