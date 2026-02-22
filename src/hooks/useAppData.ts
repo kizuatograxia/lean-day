@@ -91,18 +91,19 @@ export function calculateResults(userData: UserData): CalcResults {
   }
 
   const tdee = tmb * ACTIVITY_FACTORS[activityLevel as any];
-  const weeklyTarget = tdee * 7 - WEEKLY_DEFICIT[String(weeklyGoal)];
-
-  const dailyRoutine = (weeklyTarget - tdee) / 6;
-  const dailyFreeDay = tdee;
+  const roundedTdee = Math.round(tdee);
+  const rawWeeklyTarget = (tdee * 7) - WEEKLY_DEFICIT[String(weeklyGoal)];
+  const dailyRoutine = Math.round((rawWeeklyTarget - roundedTdee) / 6);
+  const dailyFreeDay = roundedTdee;
+  const weeklyTarget = (6 * dailyRoutine) + dailyFreeDay;
 
   return {
     tmb: Math.round(tmb),
-    tdee: Math.round(tdee),
+    tdee: roundedTdee,
     weeklyDeficit: WEEKLY_DEFICIT[String(weeklyGoal)],
-    weeklyTarget: Math.round(weeklyTarget),
-    dailyRoutine: Math.round(dailyRoutine),
-    dailyFreeDay: Math.round(dailyFreeDay),
+    weeklyTarget: weeklyTarget,
+    dailyRoutine: dailyRoutine,
+    dailyFreeDay: dailyFreeDay,
   };
 }
 
