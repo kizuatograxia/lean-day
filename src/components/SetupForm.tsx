@@ -40,7 +40,7 @@ export function SetupForm({ onComplete, initialData, compact = false }: SetupFor
       {!compact && (
         <div className="text-center space-y-2 pb-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Viva sua vida sem sabotar seu progresso
+            Lean Day sem sabotar seu progresso
           </h1>
           <p className="text-muted-foreground text-sm">
             Configure seus dados para descobrir sua margem segura para o final de semana
@@ -91,22 +91,20 @@ export function SetupForm({ onComplete, initialData, compact = false }: SetupFor
           <button
             type="button"
             onClick={() => setForm(p => ({ ...p, sex: "male" }))}
-            className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all ${
-              form.sex === "male"
+            className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all ${form.sex === "male"
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-foreground hover:border-primary/50"
-            }`}
+              }`}
           >
             Masculino
           </button>
           <button
             type="button"
             onClick={() => setForm(p => ({ ...p, sex: "female" }))}
-            className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all ${
-              form.sex === "female"
+            className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all ${form.sex === "female"
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-foreground hover:border-primary/50"
-            }`}
+              }`}
           >
             Feminino
           </button>
@@ -136,11 +134,10 @@ export function SetupForm({ onComplete, initialData, compact = false }: SetupFor
               key={v}
               type="button"
               onClick={() => setForm(p => ({ ...p, weeklyGoal: v }))}
-              className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all flex flex-col items-center justify-center leading-tight ${
-                form.weeklyGoal === v
+              className={`h-12 rounded-lg border-2 font-semibold text-sm transition-all flex flex-col items-center justify-center leading-tight ${form.weeklyGoal === v
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-foreground hover:border-primary/50"
-              }`}
+                }`}
             >
               <span>{v} kg</span>
             </button>

@@ -111,7 +111,7 @@ const Index = () => {
               <Leaf className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight">Viva sua vida</h1>
+              <h1 className="text-base font-bold leading-tight">Lean Day</h1>
               <p className="text-xs text-muted-foreground">sem sabotar seu progresso</p>
             </div>
           </div>
@@ -140,7 +140,7 @@ const Index = () => {
               <Leaf className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold leading-tight text-foreground">Viva sua vida</h1>
+              <h1 className="text-sm font-bold leading-tight text-foreground">Lean Day</h1>
               <p className="text-xs text-muted-foreground">Aproveite o Dia Livre</p>
             </div>
           </div>
@@ -206,8 +206,8 @@ const Index = () => {
                 key={tab.id}
                 onClick={() => { setEditingEntry(null); setActiveTab(tab.id); }}
                 className={`flex flex-col items-center justify-center py-3 px-1 gap-1 transition-colors rounded-lg ${isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 <Icon className={`h-5 w-5 ${isActive ? "stroke-[2.5px]" : "stroke-2"}`} />
