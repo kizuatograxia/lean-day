@@ -19,6 +19,11 @@ export function MyPlanTab({ calcResults, userData, onGoToFreeDay, onEditData }: 
     "0.75": "0,75 kg/semana",
   };
 
+  const totalWeekly = calcResults.weeklyTarget;
+  const routineWidth = ((6 * calcResults.dailyRoutine) / totalWeekly) * 100;
+  const freeDayBaseWidth = (calcResults.dailyRoutine / totalWeekly) * 100;
+  const marginWidth = ((calcResults.dailyFreeDay - calcResults.dailyRoutine) / totalWeekly) * 100;
+
   return (
     <div className="space-y-6 pb-6">
       {/* Title */}
@@ -40,7 +45,7 @@ export function MyPlanTab({ calcResults, userData, onGoToFreeDay, onEditData }: 
       <div className="bg-card border border-border rounded-xl p-4">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-xs text-muted-foreground">Segunda a sexta</p>
+            <p className="text-xs text-muted-foreground">Segunda a Sábado</p>
             <p className="text-sm font-medium">Consumo de rotina</p>
           </div>
           <p className="text-xl font-bold text-foreground">{calcResults.dailyRoutine.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">kcal/dia</span></p>
@@ -49,15 +54,32 @@ export function MyPlanTab({ calcResults, userData, onGoToFreeDay, onEditData }: 
 
       {/* Flow visual */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-          <span>Dias de rotina</span>
-          <span>Margem acumulada</span>
-          <span>Dia Livre</span>
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+          <span>6 Dias Rotina</span>
+          <span>Base Dia Livre</span>
+          <span>Sua Margem</span>
         </div>
-        <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
-          <div className="absolute left-0 top-0 h-full bg-primary rounded-full" style={{ width: "72%" }} />
-          <div className="absolute left-[72%] top-0 h-full bg-primary/30 rounded-full" style={{ width: "14%" }} />
-          <div className="absolute left-[86%] top-0 h-full bg-primary/60 rounded-full" style={{ width: "14%" }} />
+        <div className="relative h-3 bg-secondary rounded-full overflow-hidden flex">
+          <div
+            className="h-full bg-primary/40 border-r border-background/20 transition-all duration-500"
+            style={{ width: `${routineWidth}%` }}
+            title={`Rotina: ${(6 * calcResults.dailyRoutine).toLocaleString()} kcal`}
+          />
+          <div
+            className="h-full bg-primary/70 border-r border-background/20 transition-all duration-500"
+            style={{ width: `${freeDayBaseWidth}%` }}
+            title={`Base Dia Livre: ${calcResults.dailyRoutine.toLocaleString()} kcal`}
+          />
+          <div
+            className="h-full bg-primary transition-all duration-500"
+            style={{ width: `${marginWidth}%` }}
+            title={`Margem Extra: ${(calcResults.dailyFreeDay - calcResults.dailyRoutine).toLocaleString()} kcal`}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1 font-medium">
+          <span>{(6 * calcResults.dailyRoutine).toLocaleString()} kcal</span>
+          <span>{calcResults.dailyRoutine.toLocaleString()} kcal</span>
+          <span className="text-primary">+{(calcResults.dailyFreeDay - calcResults.dailyRoutine).toLocaleString()} kcal</span>
         </div>
       </div>
 
