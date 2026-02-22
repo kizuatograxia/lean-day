@@ -94,7 +94,7 @@ export function calculateResults(userData: UserData): CalcResults {
   const weeklyTarget = tdee * 7 - WEEKLY_DEFICIT[String(weeklyGoal)];
 
   const dailyRoutine = (weeklyTarget - tdee) / 6;
-  const dailyFreeDay = weeklyTarget - 5 * dailyRoutine;
+  const dailyFreeDay = tdee;
 
   return {
     tmb: Math.round(tmb),
