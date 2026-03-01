@@ -139,7 +139,7 @@ export const AdminSupportDashboard: React.FC<AdminSupportDashboardProps> = ({ on
         if (!newMessage.trim() || !selectedUser) return;
 
         try {
-            await api.sendMessage(1, selectedUser.userId, newMessage); // Assuming Admin ID is 1
+            await api.sendMessage(1, Number(selectedUser.userId), newMessage); // Assuming Admin ID is 1
             setNewMessage("");
             const msgs = await api.getMessages(selectedUser.userId);
             setMessages(msgs);
@@ -152,7 +152,7 @@ export const AdminSupportDashboard: React.FC<AdminSupportDashboardProps> = ({ on
         if (!selectedUser) return;
         try {
             // Send special system message to close chat
-            await api.sendMessage(1, selectedUser.userId, "[SYSTEM:CHAT_CLOSED]");
+            await api.sendMessage(1, Number(selectedUser.userId), "[SYSTEM:CHAT_CLOSED]");
             toast.success("Atendimento encerrado");
             // Optionally clear selection or stay to view history
             // handleBack(); 
