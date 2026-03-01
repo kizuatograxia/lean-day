@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { OwnedNFT } from "@/types/raffle";
 import { Progress } from "@/components/ui/progress";
 import { TicketVisualizer } from "@/components/TicketVisualizer";
+import { TicketRoulette } from "@/components/TicketRoulette";
 
 const rarityColors: Record<string, string> = {
     comum: "from-gray-400 to-gray-500",
@@ -18,14 +19,18 @@ const rarityColors: Record<string, string> = {
 };
 
 // Circular countdown component
-const CircularCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
-    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, progress: 0 });
+const CircularCountdown: React.FC<{ targetDate: string, onExpire?: () => void }> = ({ targetDate, onExpire }) => {
+    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, progress: 0, total: 1 });
 
     useEffect(() => {
         const update = () => {
             const now = Date.now();
             const end = new Date(targetDate).getTime();
             const diff = Math.max(0, end - now);
+
+            if (diff === 0 && onExpire) {
+                onExpire();
+            }
 
             // Assume raffle started 30 days before end
             const totalDuration = 30 * 24 * 60 * 60 * 1000;
@@ -37,21 +42,22 @@ const CircularCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => 
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            setTimeLeft({ days, hours, minutes, seconds, progress });
+            setTimeLeft({ days, hours, minutes, seconds, progress, total: diff });
         };
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
-    }, [targetDate]);
+    }, [targetDate, onExpire]);
 
     const isEnding = timeLeft.days === 0 && timeLeft.hours < 1;
+    const isExpired = timeLeft.total === 0;
     const circumference = 2 * Math.PI * 90;
     const strokeDashoffset = circumference * (1 - timeLeft.progress);
 
     return (
         <div className="bg-card rounded-2xl border border-border p-6 flex flex-col items-center relative overflow-hidden">
             {/* Ending soon badge */}
-            {isEnding && (
+            {isEnding && !isExpired && (
                 <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-destructive/20 text-destructive px-2.5 py-1 rounded-full text-xs font-bold border border-destructive/30">
                     <Clock className="w-3 h-3" />
                     ENCERRA EM BREVE
@@ -59,7 +65,7 @@ const CircularCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => 
             )}
 
             <h3 className="text-base font-bold text-foreground mb-6">
-                O Próximo Ganhador Será Definido em...
+                {isExpired ? "O Sorteio Está em Andamento!" : "O Próximo Ganhador Será Definido em..."}
             </h3>
 
             {/* Circular Progress */}
@@ -86,7 +92,14 @@ const CircularCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => 
                 </svg>
                 {/* Time display */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    {timeLeft.days > 0 ? (
+                    {isExpired ? (
+                        <div className="text-center">
+                            <Activity className="w-12 h-12 text-primary animate-spin mx-auto mb-2" />
+                            <span className="text-sm font-bold text-primary uppercase tracking-widest">
+                                SORTEANDO
+                            </span>
+                        </div>
+                    ) : timeLeft.days > 0 ? (
                         <>
                             <div className="text-5xl font-black text-foreground tracking-tight tabular-nums">
                                 {String(timeLeft.days).padStart(2, "0")}
@@ -114,7 +127,7 @@ const CircularCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => 
 
             {/* Action buttons */}
             <div className="flex gap-3 w-full mt-2">
-                <Button variant="hero" className="flex-1 h-12 text-base font-bold gap-2" onClick={() => {
+                <Button variant="hero" className="flex-1 h-12 text-base font-bold gap-2" disabled={isExpired} onClick={() => {
                     document.getElementById("nft-selection")?.scrollIntoView({ behavior: "smooth" });
                 }}>
                     <ShoppingCart className="w-4 h-4" />
@@ -176,6 +189,7 @@ const RaffleDetails: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [activeImage, setActiveImage] = useState<string>("");
+    const [isDrawing, setIsDrawing] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -384,7 +398,15 @@ const RaffleDetails: React.FC = () => {
                     <div className="lg:col-span-5 space-y-6">
                         {/* Countdown */}
                         {raffle.status === 'ativo' && (
-                            <CircularCountdown targetDate={raffle.dataFim} />
+                            <CircularCountdown
+                                targetDate={raffle.dataFim}
+                                onExpire={() => {
+                                    if (!isDrawing) {
+                                        setIsDrawing(true);
+                                        toast.info("O cronômetro zerou! O sorteio vai começar...");
+                                    }
+                                }}
+                            />
                         )}
 
                         {/* Prize Card */}
@@ -423,11 +445,18 @@ const RaffleDetails: React.FC = () => {
 
                     {/* RIGHT COLUMN: Ticket Visualizer + Stats + Activity */}
                     <div className="lg:col-span-7 space-y-6">
-                        {/* Ticket Visualizer (Mempool-style) */}
-                        <TicketVisualizer
-                            totalTickets={Math.max(raffle.participantes, 50)}
-                            userTickets={userTickets}
-                        />
+                        {/* Switch between Mempool and Roulette */}
+                        {isDrawing ? (
+                            <TicketRoulette
+                                totalTickets={Math.max(raffle.participantes, 50)}
+                                userTickets={userTickets}
+                            />
+                        ) : (
+                            <TicketVisualizer
+                                totalTickets={Math.max(raffle.participantes, 50)}
+                                userTickets={userTickets}
+                            />
+                        )}
 
                         {/* Stats Row */}
                         <div className="grid grid-cols-2 gap-4">
