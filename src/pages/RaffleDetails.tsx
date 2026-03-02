@@ -350,78 +350,143 @@ const RaffleDetails: React.FC = () => {
             <AnimatePresence>
                 {isLiveViewActive && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="fixed inset-0 z-[100] bg-[hsl(220,25%,5%)] flex flex-col overflow-hidden"
                     >
-                        <header className="bg-card border-b border-border shadow-md z-10">
-                            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-                                <Activity className="h-6 w-6 text-primary animate-pulse" />
-                                <div className="text-center">
-                                    <h2 className="font-black text-lg leading-tight uppercase tracking-widest">{raffle.titulo}</h2>
-                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Modo Acompanhamento Ao Vivo</p>
+                        {/* Header */}
+                        <header className="flex-shrink-0 bg-black/40 backdrop-blur-md border-b border-white/10 z-10">
+                            <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_red]" />
+                                    <span className="font-black uppercase tracking-[0.3em] text-sm text-white/90">AO VIVO</span>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setIsLiveViewActive(false)} className="rounded-full">
-                                    <ArrowLeft className="h-6 w-6" />
+                                <div className="text-center flex-1">
+                                    <h2 className="font-black text-base leading-tight uppercase tracking-widest text-white truncate">{raffle.titulo}</h2>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => setIsLiveViewActive(false)} className="rounded-full text-white/70 hover:text-white hover:bg-white/10">
+                                    <ArrowLeft className="h-5 w-5" />
                                 </Button>
                             </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto px-4 py-8 custom-scrollbar">
-                            <div className="max-w-4xl mx-auto space-y-8">
-                                {/* Large Visualization Section (Circular) */}
-                                <div className="relative flex items-center justify-center min-h-[500px]">
-                                    {/* Background Glow */}
-                                    <div className="absolute w-[600px] h-[600px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
-
-                                    {/* Proportional Mempool (Circular) */}
-                                    {!isDrawing && (
-                                        <div className="absolute w-[480px] h-[480px] z-0 opacity-80">
-                                            <TicketVisualizer
-                                                totalTickets={raffle.participantes}
-                                                userTickets={userTickets}
-                                                variant="circular"
-                                            />
+                        {/* Body */}
+                        <main className="flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+                                {isDrawing ? (
+                                    /* ---- ROULETTE MODE ---- */
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="space-y-6"
+                                    >
+                                        <div className="text-center space-y-2">
+                                            <h3 className="font-black text-3xl text-white uppercase tracking-tighter">Sorteio em Andamento</h3>
+                                            <p className="text-white/40 text-sm">Aguarde o resultado...</p>
                                         </div>
-                                    )}
-
-                                    {/* Central Interactive UI */}
-                                    <div className="relative z-10 w-full max-w-sm">
-                                        {isDrawing ? (
+                                        <div className="bg-white/5 rounded-3xl border border-white/10 p-8 backdrop-blur-sm">
                                             <TicketRoulette
                                                 totalTickets={Math.max(raffle.participantes, 50)}
                                                 userTickets={userTickets}
                                             />
-                                        ) : (
-                                            <div className="scale-110 drop-shadow-2xl">
-                                                <CircularCountdown
-                                                    targetDate={raffle.dataFim}
-                                                    onExpire={() => setIsDrawing(true)}
-                                                />
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    /* ---- LIVE VIEW MODE ---- */
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                                        {/* LEFT: Circular Mempool + Timer */}
+                                        <div className="flex flex-col items-center gap-6">
+                                            <div className="text-center">
+                                                <h3 className="font-black text-2xl text-white uppercase tracking-tighter">Visualização em Tempo Real</h3>
+                                                <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">Tickets proporcional por participante</p>
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
+                                            <div className="relative flex items-center justify-center w-full max-w-[440px] aspect-square">
+                                                {/* Glow */}
+                                                <div className="absolute inset-0 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
 
-                                {/* Stats & Activity Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                                    <div className="md:col-span-4 space-y-6">
-                                        <div className="bg-card rounded-2xl border border-border p-6 text-center space-y-2">
-                                            <Users className="w-8 h-8 mx-auto text-primary" />
-                                            <p className="text-3xl font-black text-foreground">{raffle.participantes}</p>
-                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Participantes</p>
+                                                {/* Circular Mempool behind the timer */}
+                                                <div className="absolute inset-0 z-0">
+                                                    <TicketVisualizer
+                                                        totalTickets={raffle.participantes}
+                                                        userTickets={userTickets}
+                                                        variant="circular"
+                                                    />
+                                                </div>
+
+                                                {/* Countdown in Center */}
+                                                <div className="relative z-10 w-[72%]">
+                                                    <CircularCountdown
+                                                        targetDate={raffle.dataFim}
+                                                        onExpire={() => setIsDrawing(true)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {/* Legend */}
+                                            <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 rounded-sm bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
+                                                    <span className="text-primary">Seus tickets</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 rounded-sm bg-blue-600/60 border border-white/10" />
+                                                    <span className="text-white/50">Outros</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="bg-card rounded-2xl border border-border p-6 text-center space-y-2">
-                                            <Target className="w-8 h-8 mx-auto text-purple-400" />
-                                            <p className="text-3xl font-black text-foreground">{currentChance.toFixed(1)}%</p>
-                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Sua Chance</p>
+
+                                        {/* RIGHT: Stats + Activity */}
+                                        <div className="flex flex-col gap-5">
+                                            {/* Stat Cards */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                    <Users className="w-5 h-5 text-blue-400 mb-2" />
+                                                    <p className="text-3xl font-black text-white">{raffle.participantes}</p>
+                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Participantes</p>
+                                                </div>
+                                                <div className="bg-primary/10 rounded-2xl p-5 border border-primary/20 space-y-1">
+                                                    <Target className="w-5 h-5 text-primary mb-2" />
+                                                    <p className="text-3xl font-black text-primary">{currentChance.toFixed(1)}%</p>
+                                                    <p className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">Sua Chance</p>
+                                                </div>
+                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                    <Ticket className="w-5 h-5 text-purple-400 mb-2" />
+                                                    <p className="text-3xl font-black text-white">{userTickets}</p>
+                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seus Tickets</p>
+                                                </div>
+                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                    <Trophy className="w-5 h-5 text-yellow-400 mb-2" />
+                                                    <p className="text-xl font-black text-white">R$ {raffle.premioValor.toLocaleString("pt-BR")}</p>
+                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Prêmio</p>
+                                                </div>
+                                            </div>
+                                            {/* Activity Feed */}
+                                            <div className="bg-white/5 rounded-2xl border border-white/8 overflow-hidden">
+                                                <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                                                        <span className="font-black text-sm text-white uppercase tracking-widest">Atividade Recente</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Tempo Real</span>
+                                                </div>
+                                                <ActivityFeed raffleId={raffle.id} />
+                                            </div>
+
+                                            {/* CTA */}
+                                            <Button
+                                                variant="hero"
+                                                className="h-14 text-base font-black gap-3 rounded-2xl"
+                                                onClick={() => {
+                                                    setIsLiveViewActive(false);
+                                                    setTimeout(() => document.getElementById("nft-selection")?.scrollIntoView({ behavior: "smooth" }), 200);
+                                                }}
+                                            >
+                                                <ShoppingCart className="w-5 h-5" />
+                                                Comprar Mais Tickets
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="md:col-span-8">
-                                        <ActivityFeed raffleId={raffle.id} />
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </main>
                     </motion.div>

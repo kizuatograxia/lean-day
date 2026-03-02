@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { Trophy } from "lucide-react";
 
 interface TicketRouletteProps {
     totalTickets: number;
@@ -8,106 +9,139 @@ interface TicketRouletteProps {
     onComplete?: () => void;
 }
 
-const TICKET_WIDTH = 100;
-const VISIBLE_TICKETS = 20; // Number of tickets to generate for the animation
+const TICKET_SIZE = 120; // px per ticket (square)
+const STRIP_LENGTH = 60; // total tickets in the strip for visual depth
 
 export const TicketRoulette: React.FC<TicketRouletteProps> = ({
     totalTickets,
     userTickets,
-    winnerIndex = 42, // Mock winner index for now
+    winnerIndex,
     onComplete,
 }) => {
     const controls = useAnimation();
-    const [isSpinning, setIsSpinning] = useState(false);
+    const [phase, setPhase] = useState<"spinning" | "settling" | "done">("spinning");
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    // Generate a random-ish list of tickets for the roulette strip
-    // The winner should be at a specific position (e.g., VISIBLE_TICKETS - 5)
+    const WINNER_POSITION = Math.floor(STRIP_LENGTH * 0.65); // Winner at ~65% of strip
+
+    // Generate the roulette strip with proportional user tickets
     const tickets = useMemo(() => {
-        const list = [];
-        for (let i = 0; i < VISIBLE_TICKETS; i++) {
-            // Randomly assign some as user tickets
-            const isUser = Math.random() < (userTickets / totalTickets);
-            list.push({
-                id: i,
-                number: Math.floor(Math.random() * totalTickets),
-                type: isUser ? "user" : "pool"
-            });
-        }
-        // Fixed winner at position 15
-        list[15] = {
-            id: 15,
-            number: winnerIndex,
-            type: "pool" // For drama, assume someone else won unless we specify user won
-        };
-        return list;
+        const userRatio = Math.max(0.05, userTickets / Math.max(1, totalTickets));
+        return Array.from({ length: STRIP_LENGTH }, (_, i) => {
+            const isWinner = i === WINNER_POSITION;
+            const isUser = !isWinner && Math.random() < userRatio;
+            const num = winnerIndex && isWinner
+                ? winnerIndex
+                : Math.floor(Math.random() * totalTickets) + 1;
+            return { id: i, number: num, type: isWinner ? "winner" : isUser ? "user" : "pool" };
+        });
     }, [totalTickets, userTickets, winnerIndex]);
 
     useEffect(() => {
-        const startSpin = async () => {
-            setIsSpinning(true);
+        const animate = async () => {
+            const containerWidth = containerRef.current?.offsetWidth ?? 400;
+            const targetOffset = WINNER_POSITION * TICKET_SIZE - containerWidth / 2 + TICKET_SIZE / 2;
 
-            // Start at 0, spin to the winner position
-            // Each ticket is TICKET_WIDTH px
-            // We want the winner (index 15) to be in the center
-            const winnerOffset = 15 * TICKET_WIDTH - (window.innerWidth / 4); // Adjusted for center
-
+            // Phase 1: Fast spin
             await controls.start({
-                x: -winnerOffset,
+                x: -targetOffset + TICKET_SIZE * 8, // Overshoot past winner
                 transition: {
-                    duration: 8,
-                    ease: [0.12, 0, 0.39, 0], // Fast start
-                }
+                    duration: 5,
+                    ease: [0.1, 0.0, 0.2, 1.0], // Fast then slow
+                },
             });
 
-            // Slow down and settle
+            setPhase("settling");
+
+            // Phase 2: Settle onto winner
             await controls.start({
-                x: -winnerOffset - 20,
-                transition: { duration: 2, ease: "easeOut" }
+                x: -targetOffset,
+                transition: { duration: 1.5, ease: [0.25, 1, 0.5, 1] },
             });
 
-            setIsSpinning(false);
+            setPhase("done");
             if (onComplete) onComplete();
         };
 
-        startSpin();
+        animate();
     }, [controls, onComplete]);
 
+    const getTicketStyle = (type: string) => {
+        if (type === "winner") return "bg-gradient-to-b from-yellow-400 to-amber-500 border-yellow-300 shadow-[0_0_40px_rgba(251,191,36,0.8)]";
+        if (type === "user") return "bg-primary/20 border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]";
+        return "bg-card/60 border-border/50";
+    };
+
     return (
-        <div className="relative w-full overflow-hidden bg-black/40 rounded-2xl border border-white/5 py-12 shadow-2xl">
-            {/* Center Marker */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-primary/50 z-20 -translate-x-1/2 shadow-[0_0_15px_hsl(var(--primary))]">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary rotate-45 -translate-y-1/2" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary rotate-45 translate-y-1/2" />
+        <div className="w-full flex flex-col items-center gap-8">
+            {/* Title */}
+            <div className="text-center space-y-2">
+                <motion.p
+                    animate={{ opacity: [1, 0.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.2 }}
+                    className="text-primary font-black uppercase tracking-[0.4em] text-sm"
+                >
+                    {phase === "done" ? "SORTEIO CONCLUÍDO" : "SORTEANDO VENCEDOR..."}
+                </motion.p>
+                <p className="text-[11px] text-muted-foreground">{totalTickets.toLocaleString()} tickets no sorteio</p>
             </div>
 
-            <motion.div
-                animate={controls}
-                className="flex gap-2 px-1/2"
-                style={{ width: "max-content" }}
-            >
-                {tickets.map((ticket, i) => (
-                    <div
-                        key={i}
-                        className={`w-[100px] h-[100px] rounded-xl flex flex-col items-center justify-center border-2 transition-colors ${ticket.type === "user"
-                                ? "bg-primary/20 border-primary shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                                : "bg-background border-border"
-                            }`}
+            {/* Roulette Container */}
+            <div ref={containerRef} className="relative w-full overflow-hidden" style={{ height: `${TICKET_SIZE + 40}px` }}>
+                {/* Edge Gradients */}
+                <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background to-transparent z-20 pointer-events-none" />
+                <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background to-transparent z-20 pointer-events-none" />
+
+                {/* Vertical Center Markers */}
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none" style={{ width: `${TICKET_SIZE + 8}px` }}>
+                    <div className="w-full h-1 bg-primary shadow-[0_0_12px_hsl(var(--primary))]" style={{ marginTop: '16px' }} />
+                    <div className="flex-1 w-full border-l-2 border-r-2 border-primary/30" />
+                    <div className="w-full h-1 bg-primary shadow-[0_0_12px_hsl(var(--primary))]" style={{ marginBottom: '16px' }} />
+                </div>
+
+                {/* Animated Strip */}
+                <div className="absolute top-1/2 -translate-y-1/2 left-0">
+                    <motion.div
+                        animate={controls}
+                        className="flex gap-3 items-center"
+                        style={{ paddingLeft: '50%', paddingRight: '50%' }}
                     >
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Ticket</span>
-                        <span className={`text-2xl font-black ${ticket.type === "user" ? "text-primary" : "text-foreground"}`}>
-                            #{ticket.number}
-                        </span>
-                    </div>
-                ))}
-            </motion.div>
-
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-background via-transparent to-background" />
-
-            <div className="mt-8 text-center">
-                <p className="text-primary font-bold animate-pulse uppercase tracking-[0.2em] text-sm">
-                    Sorteando Vencedor...
-                </p>
+                        {tickets.map((ticket) => (
+                            <div
+                                key={ticket.id}
+                                className={`flex-shrink-0 flex flex-col items-center justify-center rounded-2xl border-2 transition-all ${getTicketStyle(ticket.type)}`}
+                                style={{ width: `${TICKET_SIZE}px`, height: `${TICKET_SIZE}px` }}
+                            >
+                                {ticket.type === "winner" && phase === "done" ? (
+                                    <Trophy className="w-8 h-8 text-yellow-900 mb-1" />
+                                ) : (
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                                        {ticket.type === "user" ? "VOCÊ" : "Ticket"}
+                                    </span>
+                                )}
+                                <span className={`text-2xl font-black tabular-nums ${ticket.type === "winner" ? "text-yellow-900" :
+                                        ticket.type === "user" ? "text-primary" : "text-foreground"
+                                    }`}>
+                                    #{ticket.number.toString().padStart(4, "0")}
+                                </span>
+                            </div>
+                        ))}
+                    </motion.div>
+                </div>
             </div>
+
+            {/* Done Banner */}
+            {phase === "done" && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    className="w-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/50 rounded-2xl p-5 text-center"
+                >
+                    <Trophy className="w-10 h-10 text-yellow-400 mx-auto mb-2" />
+                    <p className="font-black text-xl text-yellow-300 uppercase tracking-wider">Ticket #{tickets[WINNER_POSITION]?.number.toString().padStart(4, "0")} Venceu!</p>
+                    <p className="text-sm text-muted-foreground mt-1">Parabéns ao ganhador.</p>
+                </motion.div>
+            )}
         </div>
     );
 };
