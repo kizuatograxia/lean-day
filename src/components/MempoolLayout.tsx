@@ -139,8 +139,8 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
                     isDrawing={isDrawing}
                 />
 
-                {/* Timer overlaid on top — fully transparent */}
-                <div className="absolute inset-0 p-[10%]">
+                {/* Timer overlaid on top — fully transparent, above blocks */}
+                <div className="absolute inset-0 p-[10%] z-50 pointer-events-none">
                     <CircularCountdown targetDate={targetDate} onExpire={onExpire} />
                 </div>
             </div>
