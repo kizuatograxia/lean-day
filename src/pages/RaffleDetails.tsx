@@ -132,8 +132,8 @@ const RaffleDetails: React.FC = () => {
                         dataFim: data.draw_date || "2024-12-31",
                         custoNFT: data.ticket_price,
                         participantes: parseInt(data.tickets_sold) || 0,
-                        maxParticipantes: parseInt(data.max_tickets) || parseInt(data.total_tickets) || 500,
-                        categoria: "geral",
+                        maxParticipantes: parseInt(data.max_tickets) || parseInt(data.total_tickets) || 0,
+                        categoria: data.category || "geral",
                         raridade: "comum",
                         emoji: "🎫",
                         image_urls: data.image_urls || [data.image_url],
@@ -260,7 +260,18 @@ const RaffleDetails: React.FC = () => {
     const { count: selectedCount, value: selectedValue } = selectionStats;
     const ticketPrice = raffle.custoNFT;
     const ticketsToReceive = Math.floor(selectedValue / ticketPrice);
-    const emptySlots = raffle ? Math.max(0, (raffle.maxParticipantes || raffle.participantes * 2) - raffle.participantes) : 0;
+
+    // Calculate emptySlots robustly
+    let emptySlots = Infinity;
+    if (raffle && raffle.maxParticipantes > 0) {
+        // Strict limit set by admin
+        emptySlots = Math.max(0, raffle.maxParticipantes - raffle.participantes);
+    } else if (raffle && raffle.premioValor > 0 && ticketPrice > 0) {
+        // Limit derived from prize goal
+        const derivedMax = Math.ceil(raffle.premioValor / ticketPrice);
+        emptySlots = Math.max(0, derivedMax - raffle.participantes);
+    }
+    // Note: if neither is set, emptySlots remains Infinity (no limit)
 
     const currentChance = calculateChance(userTickets);
     const potentialChance = calculateChance(userTickets + ticketsToReceive);
