@@ -83,17 +83,19 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Build individual tiles: proportional representation within maxDisplay
+  // Build individual tiles: 1 tile per real ticket (up to 2000 to avoid browser overload)
   const tiles = useMemo(() => {
     const list: { id: string; type: "user" | "pool" }[] = [];
     const total = Math.max(totalTickets, userTickets, 1);
 
-    // Scale both pools proportionally so ratio is preserved
+    // If total is manageable (≤2000), show every ticket as its own tile
+    // Otherwise scale proportionally to 2000 max
+    const cap = Math.min(total, 2000);
     const userDisplayCount = Math.min(
-      Math.round((userTickets / total) * maxDisplay),
-      maxDisplay
+      Math.round((userTickets / total) * cap),
+      cap
     );
-    const poolDisplayCount = maxDisplay - userDisplayCount;
+    const poolDisplayCount = cap - userDisplayCount;
 
     for (let i = 0; i < userDisplayCount; i++) {
       list.push({ id: `user-${i}`, type: "user" });
