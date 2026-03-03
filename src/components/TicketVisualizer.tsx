@@ -1,315 +1,512 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy } from "lucide-react";
-
-interface TicketBlock {
-  id: string;
-  type: "user" | "pool";
-  x: number;
-  y: number;
-}
-
-const GRID_SIZE = 60;
-const CELL = 1; // each ticket = 1x1 cell
-
-// Pack 1x1 tiles densely inside circle or square
-const packTiles = (
-  tiles: { id: string; type: "user" | "pool" }[],
-  variant: "square" | "circular"
-): TicketBlock[] => {
-  const result: TicketBlock[] = [];
-  const center = GRID_SIZE / 2;
-  const outerR = GRID_SIZE / 2 - 0.5;
-
-  // Pre-build list of valid cells
-  const cells: [number, number][] = [];
-
-  for (let y = 0; y < GRID_SIZE; y++) {
-    for (let x = 0; x < GRID_SIZE; x++) {
-      if (variant === "circular") {
-        // Cell center must be inside circle
-        const cx = x + 0.5;
-        const cy = y + 0.5;
-        if (Math.sqrt((cx - center) ** 2 + (cy - center) ** 2) <= outerR - 0.5) {
-          cells.push([x, y]);
-        }
-      } else {
-        cells.push([x, y]);
-      }
-    }
-  }
-
-  // Place tiles into available cells
-  for (let i = 0; i < Math.min(tiles.length, cells.length); i++) {
-    const [x, y] = cells[i];
-    result.push({ id: tiles[i].id, type: tiles[i].type, x, y });
-  }
-
-  return result;
-};
-
-// Sort tiles in clockwise order from top for roulette
-const sortTilesClockwise = (tiles: TicketBlock[]): number[] => {
-  const center = GRID_SIZE / 2;
-  return tiles
-    .map((t, idx) => ({
-      idx,
-      angle: Math.atan2(t.y + 0.5 - center, t.x + 0.5 - center),
-    }))
-    .sort((a, b) => a.angle - b.angle)
-    .map((x) => x.idx);
-};
+import { Trophy, Zap } from "lucide-react";
 
 interface TicketVisualizerProps {
-  totalTickets: number;
+  /** Total slots available in the raffle (maxParticipantes) */
+  totalSlots: number;
+  /** How many tickets have been sold */
+  soldTickets: number;
+  /** How many of the sold tickets belong to the current user */
   userTickets: number;
-  maxDisplay?: number;
+  /** Shape variant */
   variant?: "square" | "circular";
+  /** Whether draw animation is active */
   isDrawing?: boolean;
-  onDrawComplete?: () => void;
+  /** Callback when draw animation completes */
+  onDrawComplete?: (winnerIndex: number) => void;
 }
 
+// Seeded PRNG for deterministic shuffle
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    return s / 0x7fffffff;
+  };
+};
+
 export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
-  totalTickets,
+  totalSlots,
+  soldTickets,
   userTickets,
-  maxDisplay = 300,
   variant = "square",
   isDrawing = false,
   onDrawComplete,
 }) => {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [rouletteHighlight, setRouletteHighlight] = useState(-1);
-  const [roulettePhase, setRoulettePhase] = useState<"idle" | "spinning" | "done">("idle");
-  const [winnerId, setWinnerId] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animFrameRef = useRef<number>(0);
+  const [size, setSize] = useState(0);
+  const [hoveredCell, setHoveredCell] = useState<number | null>(null);
+  const [drawPhase, setDrawPhase] = useState<"idle" | "scanning" | "slowing" | "done">("idle");
+  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const [winnerIdx, setWinnerIdx] = useState(-1);
+  const drawTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Build individual tiles: 1 tile per real ticket (up to 2000 to avoid browser overload)
-  const tiles = useMemo(() => {
-    const list: { id: string; type: "user" | "pool" }[] = [];
-    const total = Math.max(totalTickets, userTickets, 1);
+  // Progressive reveal state
+  const [revealedCount, setRevealedCount] = useState(0);
+  const revealCompleteRef = useRef(false);
 
-    // If total is manageable (≤2000), show every ticket as its own tile
-    // Otherwise scale proportionally to 2000 max
-    const cap = Math.min(total, 2000);
-    const userDisplayCount = Math.min(
-      Math.round((userTickets / total) * cap),
-      cap
-    );
-    const poolDisplayCount = cap - userDisplayCount;
+  // Compute grid dimensions
+  const capped = Math.min(totalSlots, 2500);
+  const scale = totalSlots > 2500 ? totalSlots / 2500 : 1;
+  const cols = Math.ceil(Math.sqrt(capped * (variant === "circular" ? 1.1 : 1)));
+  const rows = Math.ceil(capped / cols);
 
-    for (let i = 0; i < userDisplayCount; i++) {
-      list.push({ id: `user-${i}`, type: "user" });
+  // Build cell data
+  const cells = useMemo(() => {
+    const arr: ("user" | "pool" | "empty")[] = new Array(cols * rows).fill("empty");
+    const scaledSold = Math.round(soldTickets / scale);
+    const scaledUser = Math.round(userTickets / scale);
+    const totalCells = cols * rows;
+
+    const sold = Math.min(scaledSold, totalCells);
+    const user = Math.min(scaledUser, sold);
+    const pool = sold - user;
+
+    const ordered: ("user" | "pool")[] = [];
+    for (let i = 0; i < user; i++) ordered.push("user");
+    for (let i = 0; i < pool; i++) ordered.push("pool");
+
+    const rng = seededRandom(totalSlots * 31 + userTickets * 7);
+    for (let i = ordered.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [ordered[i], ordered[j]] = [ordered[j], ordered[i]];
     }
-    for (let i = 0; i < poolDisplayCount; i++) {
-      list.push({ id: `pool-${i}`, type: "pool" });
+
+    const validIndices: number[] = [];
+    const center = cols / 2;
+    const centerY = rows / 2;
+
+    for (let i = 0; i < totalCells; i++) {
+      const cx = (i % cols) + 0.5;
+      const cy = Math.floor(i / cols) + 0.5;
+      if (variant === "circular") {
+        const dx = (cx - center) / (cols / 2);
+        const dy = (cy - centerY) / (rows / 2);
+        if (dx * dx + dy * dy <= 1) {
+          validIndices.push(i);
+        }
+      } else {
+        validIndices.push(i);
+      }
     }
 
-    // Shuffle so user tiles distribute throughout circle (not all at top under timer)
-    const seed = userTickets * 9973 + totalTickets;
-    let s = seed;
-    const shuffled = [...list];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      const j = Math.abs(s) % (i + 1);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    const rng2 = seededRandom(totalSlots * 17 + soldTickets);
+    for (let i = validIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(rng2() * (i + 1));
+      [validIndices[i], validIndices[j]] = [validIndices[j], validIndices[i]];
     }
 
-    return packTiles(shuffled, variant);
-  }, [totalTickets, userTickets, maxDisplay, variant]);
+    for (let i = 0; i < ordered.length && i < validIndices.length; i++) {
+      arr[validIndices[i]] = ordered[i];
+    }
 
+    return arr;
+  }, [totalSlots, soldTickets, userTickets, cols, rows, scale, variant]);
 
-  // Roulette spin order (clockwise for circular, sequential for square)
-  const spinOrder = useMemo(
-    () => (variant === "circular" ? sortTilesClockwise(tiles) : tiles.map((_, i) => i)),
-    [tiles, variant]
-  );
+  // Build reveal order: spiral from center outward (like mempool.space)
+  const revealOrder = useMemo(() => {
+    const totalCells = cols * rows;
+    const centerCol = Math.floor(cols / 2);
+    const centerRow = Math.floor(rows / 2);
+    const center = cols / 2;
+    const centerY = rows / 2;
 
-  // Roulette animation
+    // Collect valid cell indices with distance from center
+    const items: { idx: number; dist: number }[] = [];
+    for (let i = 0; i < totalCells; i++) {
+      const c = i % cols;
+      const r = Math.floor(i / cols);
+      if (variant === "circular") {
+        const dx = (c + 0.5 - center) / (cols / 2);
+        const dy = (r + 0.5 - centerY) / (rows / 2);
+        if (dx * dx + dy * dy > 1) continue;
+      }
+      const dx = c - centerCol;
+      const dy = r - centerRow;
+      items.push({ idx: i, dist: dx * dx + dy * dy });
+    }
+
+    // Sort by distance (center first) with slight randomness for organic feel
+    const rng = seededRandom(totalSlots * 41);
+    items.sort((a, b) => a.dist - b.dist + (rng() - 0.5) * 2);
+    return items.map(x => x.idx);
+  }, [cols, rows, variant, totalSlots]);
+
+  // Progressive reveal animation
   useEffect(() => {
-    if (!isDrawing || tiles.length === 0) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (isDrawing) {
+      // Instantly reveal all when drawing
+      setRevealedCount(revealOrder.length);
+      revealCompleteRef.current = true;
+      return;
+    }
 
-    // Winner is a random user tile if available, else random pool tile
-    const userTiles = tiles.filter((t) => t.type === "user");
-    const winnerTile = userTiles.length > 0
-      ? userTiles[Math.floor(Math.random() * userTiles.length)]
-      : tiles[Math.floor(Math.random() * tiles.length)];
+    // Reset and start reveal
+    setRevealedCount(0);
+    revealCompleteRef.current = false;
 
-    const winnerGlobalIdx = tiles.findIndex((t) => t.id === winnerTile.id);
-    const winnerSpinPos = spinOrder.indexOf(winnerGlobalIdx);
+    const total = revealOrder.length;
+    if (total === 0) return;
 
-    let spinIdx = 0;
+    // Reveal in batches for smooth animation (~1.5s total)
+    const batchSize = Math.max(1, Math.ceil(total / 60)); // ~60 frames
+    let current = 0;
+
+    const frame = () => {
+      current = Math.min(current + batchSize, total);
+      setRevealedCount(current);
+      if (current < total) {
+        animFrameRef.current = requestAnimationFrame(frame);
+      } else {
+        revealCompleteRef.current = true;
+      }
+    };
+
+    // Small delay before starting
+    const timeout = setTimeout(() => {
+      animFrameRef.current = requestAnimationFrame(frame);
+    }, 150);
+
+    return () => {
+      clearTimeout(timeout);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [revealOrder, isDrawing]);
+
+  // Resize observer
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0].contentRect.width;
+      setSize(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Build set of currently revealed cell indices
+  const revealedSet = useMemo(() => {
+    const set = new Set<number>();
+    for (let i = 0; i < revealedCount; i++) {
+      set.add(revealOrder[i]);
+    }
+    return set;
+  }, [revealedCount, revealOrder]);
+
+  // Canvas rendering
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || size === 0) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.scale(dpr, dpr);
+
+    const cellW = size / cols;
+    const cellH = size / rows;
+    const gap = Math.max(0.5, cellW * 0.06);
+    const center = cols / 2;
+    const centerY = rows / 2;
+
+    ctx.clearRect(0, 0, size, size);
+
+    for (let i = 0; i < cols * rows; i++) {
+      // Skip cells not yet revealed
+      if (!revealedSet.has(i)) continue;
+
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = col * cellW + gap;
+      const y = row * cellH + gap;
+      const w = cellW - gap * 2;
+      const h = cellH - gap * 2;
+
+      if (w <= 0 || h <= 0) continue;
+
+      if (variant === "circular") {
+        const cx = (col + 0.5 - center) / (cols / 2);
+        const cy = (row + 0.5 - centerY) / (rows / 2);
+        if (cx * cx + cy * cy > 1) continue;
+      }
+
+      const type = cells[i];
+      const isHighlighted = drawPhase !== "idle" && highlightIdx === i;
+      const isWinner = drawPhase === "done" && winnerIdx === i;
+      const isHovered = !isDrawing && hoveredCell === i;
+
+      // Entrance scale — cells at the edge of reveal are slightly smaller
+      const revealIdx = revealOrder.indexOf(i);
+      const distFromEdge = revealedCount - revealIdx;
+      const entranceScale = revealCompleteRef.current ? 1 : Math.min(1, distFromEdge / 8);
+
+      let fillColor: string;
+      let borderColor = "rgba(255,255,255,0.04)";
+      let shadowColor = "";
+
+      if (isWinner) {
+        fillColor = "hsl(45, 95%, 55%)";
+        borderColor = "rgba(234,179,8,0.9)";
+        shadowColor = "rgba(234,179,8,0.6)";
+      } else if (isHighlighted) {
+        fillColor = "hsl(142, 80%, 55%)";
+        borderColor = "rgba(74,222,128,0.9)";
+        shadowColor = "rgba(74,222,128,0.5)";
+      } else if (type === "user") {
+        fillColor = isHovered ? "hsl(142, 65%, 48%)" : "hsl(142, 60%, 38%)";
+        borderColor = "rgba(74,222,128,0.35)";
+        if (isHovered) shadowColor = "rgba(74,222,128,0.3)";
+      } else if (type === "pool") {
+        const seed = (i * 7 + 13) % 20;
+        const hue = 215 + (seed % 6) * 4;
+        const light = 20 + (seed % 5) * 3;
+        fillColor = `hsl(${hue}, 50%, ${light}%)`;
+        borderColor = "rgba(255,255,255,0.06)";
+      } else {
+        fillColor = "rgba(255,255,255,0.02)";
+        borderColor = "rgba(255,255,255,0.03)";
+      }
+
+      if (isDrawing && drawPhase !== "idle" && !isHighlighted && !isWinner) {
+        ctx.globalAlpha = 0.15;
+      } else {
+        ctx.globalAlpha = entranceScale;
+      }
+
+      if (shadowColor) {
+        ctx.shadowColor = shadowColor;
+        ctx.shadowBlur = isWinner ? 12 : 6;
+      } else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+      }
+
+      // Apply entrance scale transform
+      const inset = (1 - entranceScale) * w * 0.5;
+      const dx = x + inset;
+      const dy = y + inset;
+      const dw = w * entranceScale;
+      const dh = h * entranceScale;
+
+      const r = Math.max(1, dw * 0.12);
+      ctx.beginPath();
+      ctx.roundRect(dx, dy, dw, dh, r);
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = isWinner ? 1.5 : 0.5;
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 1;
+  }, [cells, size, cols, rows, variant, hoveredCell, drawPhase, highlightIdx, winnerIdx, isDrawing, revealedSet]);
+
+  // Mouse hover tracking
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDrawing || size === 0) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const col = Math.floor((x / size) * cols);
+    const row = Math.floor((y / size) * rows);
+    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+      setHoveredCell(row * cols + col);
+    }
+  }, [isDrawing, size, cols, rows]);
+
+  // Draw animation
+  useEffect(() => {
+    if (!isDrawing || cells.length === 0) return;
+    
+    // Find valid sold cells for scanning
+    const soldIndices = cells
+      .map((c, i) => ({ c, i }))
+      .filter(x => x.c === "user" || x.c === "pool")
+      .map(x => x.i);
+
+    if (soldIndices.length === 0) return;
+
+    // Pick winner (random sold ticket)
+    const winIdx = soldIndices[Math.floor(Math.random() * soldIndices.length)];
+
+    let scanIdx = 0;
     let ticks = 0;
-    const fastTicks = spinOrder.length * 3;
-    let delay = 30;
-    let slowing = false;
+    const totalFastTicks = soldIndices.length * 3;
+    let delay = 20;
+    let phase: "scanning" | "slowing" = "scanning";
 
-    setRoulettePhase("spinning");
-    setWinnerId(null);
-    setRouletteHighlight(-1);
+    setDrawPhase("scanning");
+    setWinnerIdx(-1);
+    setHighlightIdx(-1);
 
     const tick = () => {
-      spinIdx = (spinIdx + 1) % spinOrder.length;
-      setRouletteHighlight(spinOrder[spinIdx]);
+      scanIdx = (scanIdx + 1) % soldIndices.length;
+      setHighlightIdx(soldIndices[scanIdx]);
       ticks++;
 
-      if (!slowing && ticks >= fastTicks) slowing = true;
+      if (phase === "scanning" && ticks >= totalFastTicks) {
+        phase = "slowing";
+        setDrawPhase("slowing");
+      }
 
-      if (slowing) {
-        delay = Math.min(delay * 1.22, 500);
-        if (spinIdx === winnerSpinPos && delay > 350) {
-          setRoulettePhase("done");
-          setWinnerId(winnerTile.id);
-          if (onDrawComplete) setTimeout(onDrawComplete, 3000);
+      if (phase === "slowing") {
+        delay = Math.min(delay * 1.18, 600);
+        if (soldIndices[scanIdx] === winIdx && delay > 400) {
+          setDrawPhase("done");
+          setWinnerIdx(winIdx);
+          setHighlightIdx(winIdx);
+          if (onDrawComplete) setTimeout(() => onDrawComplete(winIdx), 3000);
           return;
         }
       }
 
-      timerRef.current = setTimeout(tick, delay);
+      drawTimerRef.current = setTimeout(tick, delay);
     };
 
-    timerRef.current = setTimeout(tick, delay);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [isDrawing, tiles, spinOrder]);
+    drawTimerRef.current = setTimeout(tick, delay);
+    return () => {
+      if (drawTimerRef.current) clearTimeout(drawTimerRef.current);
+    };
+  }, [isDrawing, cells]);
 
-  const getTileColor = useCallback(
-    (tile: TicketBlock, globalIdx: number): string => {
-      const highlighted = isDrawing && rouletteHighlight === globalIdx;
-      const winner = isDrawing && roulettePhase === "done" && tile.id === winnerId;
-      if (winner) return "hsl(45, 95%, 55%)";
-      if (highlighted) return "hsl(142, 80%, 55%)";
-      if (tile.type === "user") return "hsl(142, 60%, 38%)";
-      // Pool tiles: slight hue variation based on index for visual richness
-      const seed = parseInt(tile.id.split("-")[1] ?? "0");
-      const hue = 210 + (seed % 8) * 5;
-      const lightness = 18 + (seed % 4) * 4;
-      return `hsl(${hue}, 55%, ${lightness}%)`;
-    },
-    [isDrawing, rouletteHighlight, roulettePhase, winnerId]
-  );
+  // Real-time "pulse" animation on random sold cells
+  const [pulsingCells, setPulsingCells] = useState<Set<number>>(new Set());
+  
+  useEffect(() => {
+    if (isDrawing) return;
+    const soldIndices = cells
+      .map((c, i) => ({ c, i }))
+      .filter(x => x.c === "user" || x.c === "pool")
+      .map(x => x.i);
+    
+    if (soldIndices.length === 0) return;
 
-  const userCount = tiles.filter((t) => t.type === "user").length;
-  const poolCount = tiles.filter((t) => t.type === "pool").length;
-  const userPct = totalTickets > 0 ? ((userTickets / totalTickets) * 100).toFixed(1) : "0";
-  const poolPct = totalTickets > 0 ? (100 - (userTickets / totalTickets) * 100).toFixed(1) : "0";
-  const cellPct = `${(1 / GRID_SIZE) * 100}%`;
+    // Periodically "pulse" a random cell to simulate activity
+    const interval = setInterval(() => {
+      const randomIdx = soldIndices[Math.floor(Math.random() * soldIndices.length)];
+      setPulsingCells(prev => {
+        const next = new Set(prev);
+        next.add(randomIdx);
+        return next;
+      });
+      // Remove after animation
+      setTimeout(() => {
+        setPulsingCells(prev => {
+          const next = new Set(prev);
+          next.delete(randomIdx);
+          return next;
+        });
+      }, 1200);
+    }, 800);
 
-  const grid = (
-    <div className="relative w-full h-full">
-      {tiles.map((tile, idx) => {
-        const highlighted = isDrawing && rouletteHighlight === idx;
-        const winner = isDrawing && roulettePhase === "done" && tile.id === winnerId;
-        const hovered = !isDrawing && hoveredId === tile.id;
-        const isUser = tile.type === "user";
+    return () => clearInterval(interval);
+  }, [isDrawing, cells]);
 
-        return (
-          <div
-            key={tile.id}
-            className="absolute transition-all duration-75"
-            style={{
-              left: `${(tile.x / GRID_SIZE) * 100}%`,
-              top: `${(tile.y / GRID_SIZE) * 100}%`,
-              width: cellPct,
-              height: cellPct,
-              padding: "0.5px",
-              zIndex: winner ? 20 : highlighted ? 15 : isUser ? 5 : 1,
-            }}
-            onMouseEnter={() => !isDrawing && setHoveredId(tile.id)}
-            onMouseLeave={() => setHoveredId(null)}
-          >
-            <div
-              className="w-full h-full rounded-[1px]"
-              style={{
-                backgroundColor: getTileColor(tile, idx),
-                border: winner
-                  ? "1px solid rgba(234,179,8,0.9)"
-                  : highlighted
-                    ? "1px solid rgba(74,222,128,0.9)"
-                    : isUser
-                      ? "1px solid rgba(74,222,128,0.35)"
-                      : "1px solid rgba(255,255,255,0.06)",
-                boxShadow: winner
-                  ? "0 0 8px rgba(234,179,8,0.8), 0 0 20px rgba(234,179,8,0.3)"
-                  : highlighted
-                    ? "0 0 6px rgba(74,222,128,0.7)"
-                    : isUser
-                      ? "0 0 3px rgba(74,222,128,0.2)"
-                      : "none",
-                opacity: isDrawing ? (highlighted || winner ? 1 : 0.12) : 1,
-                transform: winner ? "scale(1.4)" : highlighted ? "scale(1.2)" : "scale(1)",
-              }}
-            />
-          </div>
-        );
-      })}
+  // Overlay pulse dots on canvas
+  useEffect(() => {
+    if (pulsingCells.size === 0 || isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas || size === 0) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      {/* Winner badge */}
-      {isDrawing && roulettePhase === "done" && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
-        >
-          <motion.div
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="bg-black/75 backdrop-blur-sm rounded-full flex flex-col items-center justify-center gap-1"
-            style={{ width: "36%", aspectRatio: "1" }}
-          >
-            <Trophy className="w-5 h-5 text-yellow-400" />
-            <p className="text-[8px] font-black text-yellow-300 uppercase tracking-[0.15em]">Vencedor!</p>
-          </motion.div>
-        </motion.div>
-      )}
-    </div>
-  );
+    const cellW = size / cols;
+    const cellH = size / rows;
+    const dpr = window.devicePixelRatio || 1;
 
-  if (variant === "circular") {
-    return (
-      <div className="relative w-full aspect-square">
-        {/* Subtle glowing ring edge */}
-        <div
-          className="absolute inset-0 rounded-full pointer-events-none z-10"
-          style={{ boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.07), 0 0 30px rgba(99,102,241,0.12)" }}
-        />
-        {/* Clip to circle */}
-        <div className="absolute inset-0 rounded-full overflow-hidden bg-[hsl(222,30%,6%)]">
-          {grid}
-        </div>
-        {/* % badges at bottom */}
-        <div
-          className="absolute left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none"
-          style={{ bottom: "7%" }}
-        >
-          <div className="flex items-center gap-1 bg-black/85 border border-white/10 px-2 py-0.5 rounded-full">
-            <div className="w-1.5 h-1.5 rounded-sm bg-green-400" />
-            <span className="text-[9px] font-black text-green-300">{userCount} tickets ({userPct}%)</span>
-          </div>
-          {poolCount > 0 && (
-            <div className="flex items-center gap-1 bg-black/85 border border-white/10 px-2 py-0.5 rounded-full">
-              <div className="w-1.5 h-1.5 rounded-sm bg-blue-400/60" />
-              <span className="text-[9px] font-black text-white/50">{poolCount} outros ({poolPct}%)</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+    pulsingCells.forEach(idx => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const cx = (col + 0.5) * cellW * dpr;
+      const cy = (row + 0.5) * cellH * dpr;
+      const r = Math.min(cellW, cellH) * 0.6 * dpr;
 
-  // Square variant
+      ctx.save();
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = cells[idx] === "user" ? "hsl(142, 80%, 60%)" : "hsl(210, 70%, 50%)";
+      ctx.fill();
+      ctx.restore();
+    });
+  }, [pulsingCells, size, cols, rows, cells, isDrawing]);
+
+  const emptySlots = Math.max(0, totalSlots - soldTickets);
+  const userPct = totalSlots > 0 ? ((userTickets / totalSlots) * 100).toFixed(1) : "0";
+  const soldPct = totalSlots > 0 ? ((soldTickets / totalSlots) * 100).toFixed(1) : "0";
+
   return (
-    <div className="bg-card/40 backdrop-blur-md rounded-3xl border border-white/10 p-6 space-y-6 shadow-2xl">
-      <div className="relative w-full aspect-square bg-black/80 rounded-2xl border border-white/5 overflow-hidden">
-        {grid}
+    <div className="relative w-full" ref={containerRef}>
+      <div
+        className={`relative w-full aspect-square ${variant === "circular" ? "rounded-full" : "rounded-2xl"} overflow-hidden`}
+        style={{
+          background: "hsl(var(--background))",
+          border: "1px solid rgba(255,255,255,0.06)",
+          boxShadow: variant === "circular"
+            ? "inset 0 0 0 2px rgba(255,255,255,0.04), 0 0 40px rgba(99,102,241,0.1)"
+            : "0 0 30px rgba(0,0,0,0.3)",
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full cursor-crosshair"
+          style={{ imageRendering: "auto" }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHoveredCell(null)}
+        />
+
+        {/* Winner overlay */}
+        <AnimatePresence>
+          {drawPhase === "done" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+                className="bg-black/80 backdrop-blur-md rounded-full flex flex-col items-center justify-center gap-2 border border-yellow-500/40"
+                style={{ width: "40%", aspectRatio: "1" }}
+              >
+                <Trophy className="w-8 h-8 text-yellow-400" />
+                <p className="text-xs font-black text-yellow-300 uppercase tracking-[0.2em]">Vencedor!</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Live indicator */}
+        {!isDrawing && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10 z-20">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Live</span>
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1 tracking-widest">Total</p>
-          <p className="text-2xl font-black text-foreground">{totalTickets}</p>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 mt-4 flex-wrap">
+        <div className="flex items-center gap-1.5 bg-card/60 px-3 py-1.5 rounded-full border border-border">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(142, 60%, 38%)" }} />
+          <span className="text-[10px] font-black text-primary">{userTickets} seus ({userPct}%)</span>
         </div>
-        <div className="bg-green-500/10 rounded-2xl p-4 border border-green-500/20">
-          <p className="text-[10px] font-bold text-green-500 uppercase mb-1 tracking-widest">Sua Chance</p>
-          <p className="text-2xl font-black text-green-400">{userPct}%</p>
+        <div className="flex items-center gap-1.5 bg-card/60 px-3 py-1.5 rounded-full border border-border">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(215, 50%, 25%)" }} />
+          <span className="text-[10px] font-black text-muted-foreground">{soldTickets - userTickets} outros ({soldPct}%)</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-card/60 px-3 py-1.5 rounded-full border border-border">
+          <div className="w-2.5 h-2.5 rounded-sm border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }} />
+          <span className="text-[10px] font-black text-muted-foreground/50">{emptySlots} disponíveis</span>
         </div>
       </div>
     </div>

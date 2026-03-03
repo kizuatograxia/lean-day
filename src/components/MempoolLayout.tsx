@@ -35,11 +35,8 @@ export const CircularCountdown: React.FC<{
 
     const isEnding = timeLeft.days === 0 && timeLeft.hours < 1;
     const isExpired = timeLeft.total === 0;
-    const C = 2 * Math.PI * 38; // circumference for r=38 SVG ring
-    const offset = C * (1 - timeLeft.progress);
 
     return (
-        // Glass pill — sits at the TOP of the circle, semi-transparent
         <div
             className="flex items-center gap-3 px-4 py-2 rounded-2xl"
             style={{
@@ -66,32 +63,32 @@ export const CircularCountdown: React.FC<{
             {/* Time text */}
             {isExpired ? (
                 <div className="flex items-center gap-1.5">
-                    <Activity className="w-4 h-4 text-green-400 animate-spin" />
-                    <span className="text-xs font-black text-green-400 uppercase tracking-widest">Sorteando</span>
+                    <Activity className="w-4 h-4 text-primary animate-spin" />
+                    <span className="text-xs font-black text-primary uppercase tracking-widest">Sorteando</span>
                 </div>
             ) : timeLeft.days > 0 ? (
                 <div className="flex flex-col">
-                    <span className="text-lg font-black text-white tabular-nums leading-none">
+                    <span className="text-lg font-black text-foreground tabular-nums leading-none">
                         {String(timeLeft.days).padStart(2, "0")}
-                        <span className="text-white/30 mx-0.5 text-base">d</span>
+                        <span className="text-muted-foreground mx-0.5 text-base">d</span>
                         {String(timeLeft.hours).padStart(2, "0")}
-                        <span className="text-white/30 mx-0.5 text-base">h</span>
+                        <span className="text-muted-foreground mx-0.5 text-base">h</span>
                     </span>
-                    <span className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Próximo sorteio</span>
+                    <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Próximo sorteio</span>
                 </div>
             ) : (
                 <div className="flex flex-col">
-                    <span className="text-lg font-black text-white tabular-nums leading-none">
+                    <span className="text-lg font-black text-foreground tabular-nums leading-none">
                         {String(timeLeft.hours).padStart(2, "0")}
-                        <span className="text-white/30 animate-pulse">:</span>
+                        <span className="text-muted-foreground animate-pulse">:</span>
                         {String(timeLeft.minutes).padStart(2, "0")}
-                        <span className="text-white/30 animate-pulse">:</span>
+                        <span className="text-muted-foreground animate-pulse">:</span>
                         {String(timeLeft.seconds).padStart(2, "0")}
                     </span>
                     <span className="text-[9px] leading-tight font-bold uppercase tracking-widest">
                         {isEnding
-                            ? <span className="text-red-400 flex items-center gap-1"><Clock className="w-2.5 h-2.5 inline" /> Em breve!</span>
-                            : <span className="text-white/30">Próximo sorteio</span>
+                            ? <span className="text-destructive flex items-center gap-1"><Clock className="w-2.5 h-2.5 inline" /> Em breve!</span>
+                            : <span className="text-muted-foreground">Próximo sorteio</span>
                         }
                     </span>
                 </div>
@@ -101,7 +98,8 @@ export const CircularCountdown: React.FC<{
 };
 
 interface MempoolLayoutProps {
-    totalTickets: number;
+    totalSlots: number;
+    soldTickets: number;
     userTickets: number;
     targetDate: string;
     onExpire?: () => void;
@@ -110,7 +108,8 @@ interface MempoolLayoutProps {
 
 // Main layout: circle with timer overlaid at the top-center
 export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
-    totalTickets,
+    totalSlots,
+    soldTickets,
     userTickets,
     targetDate,
     onExpire,
@@ -119,9 +118,9 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
     return (
         <div className="flex flex-col items-center gap-4">
             <div className="relative w-full max-w-[500px] aspect-square">
-                {/* Mempool circle */}
                 <TicketVisualizer
-                    totalTickets={totalTickets}
+                    totalSlots={totalSlots}
+                    soldTickets={soldTickets}
                     userTickets={userTickets}
                     variant="circular"
                     isDrawing={isDrawing}
@@ -133,18 +132,6 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
                         <CircularCountdown targetDate={targetDate} onExpire={onExpire} />
                     </div>
                 )}
-            </div>
-
-            {/* Legend below */}
-            <div className="flex items-center gap-5 text-xs font-bold uppercase tracking-widest">
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-green-500 shadow-[0_0_6px_rgba(74,222,128,0.5)]" />
-                    <span className="text-green-400">Seus tickets</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-blue-500/50 border border-white/10" />
-                    <span className="text-white/40">Outros</span>
-                </div>
             </div>
         </div>
     );

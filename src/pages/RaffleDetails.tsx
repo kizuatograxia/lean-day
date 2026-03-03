@@ -122,6 +122,7 @@ const RaffleDetails: React.FC = () => {
                         dataFim: data.draw_date || "2024-12-31",
                         custoNFT: data.ticket_price,
                         participantes: parseInt(data.tickets_sold) || 0,
+                        maxParticipantes: parseInt(data.max_tickets) || parseInt(data.total_tickets) || 500,
                         categoria: "geral",
                         raridade: "comum",
                         emoji: "🎫",
@@ -315,7 +316,8 @@ const RaffleDetails: React.FC = () => {
                                             <p className="text-white/40 text-sm animate-pulse">Os quadrados estão sendo sorteados...</p>
                                         </div>
                                         <MempoolLayoutSideBySide
-                                            totalTickets={raffle.participantes}
+                                            totalSlots={raffle.maxParticipantes || raffle.participantes * 2}
+                                            soldTickets={raffle.participantes}
                                             userTickets={userTickets}
                                             targetDate={raffle.dataFim}
                                             isDrawing={true}
@@ -331,7 +333,8 @@ const RaffleDetails: React.FC = () => {
                                                 <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">Quadrados proporcionais ao número de tickets</p>
                                             </div>
                                             <MempoolLayoutSideBySide
-                                                totalTickets={raffle.participantes}
+                                                totalSlots={raffle.maxParticipantes || raffle.participantes * 2}
+                                                soldTickets={raffle.participantes}
                                                 userTickets={userTickets}
                                                 targetDate={raffle.dataFim}
                                                 onExpire={() => setIsDrawing(true)}
