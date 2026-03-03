@@ -326,9 +326,26 @@ const RaffleDetails: React.FC = () => {
                                             userTickets={userTickets}
                                             targetDate={raffle.dataFim}
                                             isDrawing={true}
+                                            onDrawComplete={async () => {
+                                                // Reload raffle to get real winner from backend
+                                                try {
+                                                    const data = await api.getRaffle(raffle.id);
+                                                    if (data) {
+                                                        setRaffle((prev: any) => ({
+                                                            ...prev, ...data,
+                                                            participantes: parseInt(data.tickets_sold) || prev.participantes,
+                                                            status: data.status,
+                                                            winner: data.winner,
+                                                        }));
+                                                    }
+                                                } catch { /* silent */ }
+                                                setIsDrawing(false);
+                                                setIsLiveViewActive(false); // Go back to main page to see winner card
+                                            }}
                                         />
                                     </motion.div>
                                 ) : (
+
                                     /* ---- LIVE VIEW MODE ---- */
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                                         {/* LEFT: MempoolLayoutSideBySide (circle + timer stacked) */}

@@ -104,6 +104,7 @@ interface MempoolLayoutProps {
     targetDate: string;
     onExpire?: () => void;
     isDrawing?: boolean;
+    onDrawComplete?: (winnerIndex: number) => void;
 }
 
 // Main layout: circle with timer overlaid at the top-center
@@ -114,6 +115,7 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
     targetDate,
     onExpire,
     isDrawing = false,
+    onDrawComplete,
 }) => {
     return (
         <div className="flex flex-col items-center gap-4">
@@ -124,6 +126,7 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
                     userTickets={userTickets}
                     variant="circular"
                     isDrawing={isDrawing}
+                    onDrawComplete={onDrawComplete}
                 />
 
                 {/* Timer — glass pill at top of circle, above blocks */}
