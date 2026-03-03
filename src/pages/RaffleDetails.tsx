@@ -309,23 +309,25 @@ const RaffleDetails: React.FC = () => {
                         {/* Body */}
                         <main className="flex-1 overflow-y-auto custom-scrollbar">
                             <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-                                {isDrawing ? (
-                                    /* ---- ROULETTE MODE ---- */
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="space-y-6"
-                                    >
-                                        <div className="text-center space-y-2">
-                                            <h3 className="font-black text-3xl text-white uppercase tracking-tighter">Sorteio em Andamento</h3>
-                                            <p className="text-white/40 text-sm animate-pulse">Os quadrados estão sendo sorteados...</p>
+                                /* ---- LIVE VIEW MODE (Roulette plays inline) ---- */
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                                    {/* LEFT: MempoolLayoutSideBySide (circle + timer stacked) */}
+                                    <div>
+                                        <div className="text-center mb-6">
+                                            <h3 className="font-black text-2xl text-white uppercase tracking-tighter">
+                                                {isDrawing ? "Sorteio em Andamento" : "Visualização em Tempo Real"}
+                                            </h3>
+                                            <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">
+                                                {isDrawing ? "Os quadrados estão sendo sorteados..." : "Quadrados proporcionais ao número de tickets"}
+                                            </p>
                                         </div>
                                         <MempoolLayoutSideBySide
                                             totalSlots={raffle.maxParticipantes || raffle.participantes * 2}
                                             soldTickets={raffle.participantes}
                                             userTickets={userTickets}
                                             targetDate={raffle.dataFim}
-                                            isDrawing={true}
+                                            onExpire={() => setIsDrawing(true)}
+                                            isDrawing={isDrawing}
                                             onDrawComplete={async () => {
                                                 // Reload raffle to get real winner from backend
                                                 try {
@@ -343,83 +345,64 @@ const RaffleDetails: React.FC = () => {
                                                 setIsLiveViewActive(false); // Go back to main page to see winner card
                                             }}
                                         />
-                                    </motion.div>
-                                ) : (
-
-                                    /* ---- LIVE VIEW MODE ---- */
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                                        {/* LEFT: MempoolLayoutSideBySide (circle + timer stacked) */}
-                                        <div>
-                                            <div className="text-center mb-6">
-                                                <h3 className="font-black text-2xl text-white uppercase tracking-tighter">Visualização em Tempo Real</h3>
-                                                <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">Quadrados proporcionais ao número de tickets</p>
-                                            </div>
-                                            <MempoolLayoutSideBySide
-                                                totalSlots={raffle.maxParticipantes || raffle.participantes * 2}
-                                                soldTickets={raffle.participantes}
-                                                userTickets={userTickets}
-                                                targetDate={raffle.dataFim}
-                                                onExpire={() => setIsDrawing(true)}
-                                            />
-                                        </div>
-
-                                        {/* RIGHT: Stats + Activity */}
-                                        <div className="flex flex-col gap-5">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
-                                                    <Users className="w-5 h-5 text-blue-400 mb-2" />
-                                                    <p className="text-3xl font-black text-white">{raffle.participantes}</p>
-                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Participantes</p>
-                                                </div>
-                                                <div className="bg-green-500/10 rounded-2xl p-5 border border-green-500/20 space-y-1">
-                                                    <Target className="w-5 h-5 text-green-500 mb-2" />
-                                                    <p className="text-3xl font-black text-green-400">{currentChance.toFixed(1)}%</p>
-                                                    <p className="text-[10px] font-bold text-green-500/60 uppercase tracking-widest">Sua Chance</p>
-                                                </div>
-                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
-                                                    <Ticket className="w-5 h-5 text-purple-400 mb-2" />
-                                                    <p className="text-3xl font-black text-white">{userTickets}</p>
-                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seus Tickets</p>
-                                                </div>
-                                                <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
-                                                    <Trophy className="w-5 h-5 text-yellow-400 mb-2" />
-                                                    <p className="text-xl font-black text-white">R$ {raffle.premioValor.toLocaleString("pt-BR")}</p>
-                                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Prêmio</p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white/5 rounded-2xl border border-white/8 overflow-hidden">
-                                                <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                                                        <span className="font-black text-sm text-white uppercase tracking-widest">Atividade Recente</span>
-                                                    </div>
-                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Tempo Real</span>
-                                                </div>
-                                                <ActivityFeed raffleId={raffle.id} />
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                className="h-12 text-sm font-black gap-2 rounded-2xl border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
-                                                onClick={() => setIsDrawing(true)}
-                                            >
-                                                <Trophy className="w-4 h-4 text-yellow-400" />
-                                                Ver Sorteio em Ação
-                                            </Button>
-                                            <Button
-                                                variant="hero"
-                                                className="h-14 text-base font-black gap-3 rounded-2xl"
-                                                onClick={() => {
-                                                    setIsLiveViewActive(false);
-                                                    setTimeout(() => document.getElementById("nft-selection")?.scrollIntoView({ behavior: "smooth" }), 200);
-                                                }}
-                                            >
-                                                <ShoppingCart className="w-5 h-5" />
-                                                Comprar Mais Tickets
-                                            </Button>
-
-                                        </div>
                                     </div>
-                                )}
+
+                                    {/* RIGHT: Stats + Activity */}
+                                    <div className="flex flex-col gap-5">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                <Users className="w-5 h-5 text-blue-400 mb-2" />
+                                                <p className="text-3xl font-black text-white">{raffle.participantes}</p>
+                                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Participantes</p>
+                                            </div>
+                                            <div className="bg-green-500/10 rounded-2xl p-5 border border-green-500/20 space-y-1">
+                                                <Target className="w-5 h-5 text-green-500 mb-2" />
+                                                <p className="text-3xl font-black text-green-400">{currentChance.toFixed(1)}%</p>
+                                                <p className="text-[10px] font-bold text-green-500/60 uppercase tracking-widest">Sua Chance</p>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                <Ticket className="w-5 h-5 text-purple-400 mb-2" />
+                                                <p className="text-3xl font-black text-white">{userTickets}</p>
+                                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seus Tickets</p>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-5 border border-white/8 space-y-1">
+                                                <Trophy className="w-5 h-5 text-yellow-400 mb-2" />
+                                                <p className="text-xl font-black text-white">R$ {raffle.premioValor.toLocaleString("pt-BR")}</p>
+                                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Prêmio</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white/5 rounded-2xl border border-white/8 overflow-hidden">
+                                            <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                                                    <span className="font-black text-sm text-white uppercase tracking-widest">Atividade Recente</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Tempo Real</span>
+                                            </div>
+                                            <ActivityFeed raffleId={raffle.id} />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            className="h-12 text-sm font-black gap-2 rounded-2xl border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
+                                            onClick={() => setIsDrawing(true)}
+                                        >
+                                            <Trophy className="w-4 h-4 text-yellow-400" />
+                                            Ver Sorteio em Ação
+                                        </Button>
+                                        <Button
+                                            variant="hero"
+                                            className="h-14 text-base font-black gap-3 rounded-2xl"
+                                            onClick={() => {
+                                                setIsLiveViewActive(false);
+                                                setTimeout(() => document.getElementById("nft-selection")?.scrollIntoView({ behavior: "smooth" }), 200);
+                                            }}
+                                        >
+                                            <ShoppingCart className="w-5 h-5" />
+                                            Comprar Mais Tickets
+                                        </Button>
+
+                                    </div>
+                                </div>
                             </div>
                         </main>
                     </motion.div>
