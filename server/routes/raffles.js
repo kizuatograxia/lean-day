@@ -136,6 +136,11 @@ router.post('/raffles/:id/join', authenticateToken, async (req, res) => {
 
             calculatedTickets = Math.floor(totalValue / ticketPrice);
 
+            // Respect the explicit limit provided by the frontend if applying change logic
+            if (ticketCount && ticketCount > 0 && ticketCount < calculatedTickets) {
+                calculatedTickets = ticketCount;
+            }
+
         } else if (ticketCount) {
             if (txHash === 'OFF_CHAIN_SIMULATION') {
                 calculatedTickets = ticketCount; // Allow legacy/test
