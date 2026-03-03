@@ -203,10 +203,15 @@ const RaffleDetails: React.FC = () => {
                         participantes: parseInt(data.tickets_sold) || prev.participantes,
                     }));
                 }
+                // Detect when admin draws → trigger roulette animation
+                if (data?.status === 'encerrado' && !isDrawing) {
+                    setIsDrawing(true);
+                }
             } catch { /* silent */ }
-        }, 30_000);
+        }, 10_000); // Poll every 10s for faster draw detection
         return () => clearInterval(poll);
-    }, [isLiveViewActive, id]);
+    }, [isLiveViewActive, id, isDrawing]);
+
 
 
     if (loading) {
@@ -376,6 +381,14 @@ const RaffleDetails: React.FC = () => {
                                                 <ActivityFeed raffleId={raffle.id} />
                                             </div>
                                             <Button
+                                                variant="outline"
+                                                className="h-12 text-sm font-black gap-2 rounded-2xl border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
+                                                onClick={() => setIsDrawing(true)}
+                                            >
+                                                <Trophy className="w-4 h-4 text-yellow-400" />
+                                                Ver Sorteio em Ação
+                                            </Button>
+                                            <Button
                                                 variant="hero"
                                                 className="h-14 text-base font-black gap-3 rounded-2xl"
                                                 onClick={() => {
@@ -386,6 +399,7 @@ const RaffleDetails: React.FC = () => {
                                                 <ShoppingCart className="w-5 h-5" />
                                                 Comprar Mais Tickets
                                             </Button>
+
                                         </div>
                                     </div>
                                 )}
