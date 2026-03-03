@@ -104,7 +104,7 @@ interface MempoolLayoutProps {
     targetDate: string;
     onExpire?: () => void;
     isDrawing?: boolean;
-    onDrawComplete?: (winnerIndex: number) => void;
+    onDrawComplete?: (winnerIndex: number) => void | Promise<void>;
     winner?: { name: string; picture: string };
 }
 

@@ -14,7 +14,7 @@ interface TicketVisualizerProps {
   /** Whether draw animation is active */
   isDrawing?: boolean;
   /** Callback when draw animation completes */
-  onDrawComplete?: (winnerIndex: number) => void;
+  onDrawComplete?: (winnerIndex: number) => void | Promise<void>;
   /** Winner information to display at the end */
   winner?: { name: string; picture: string };
 }

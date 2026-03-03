@@ -468,7 +468,13 @@ const RaffleDetails: React.FC = () => {
                                             </p>
                                         </div>
                                         <MempoolLayoutSideBySide
-                                            totalSlots={raffle.maxParticipantes || raffle.participantes * 2}
+                                            totalSlots={
+                                                raffle.maxParticipantes > 0
+                                                    ? raffle.maxParticipantes
+                                                    : (raffle.premioValor > 0 && ticketPrice > 0
+                                                        ? Math.ceil(raffle.premioValor / ticketPrice)
+                                                        : Math.max(10, raffle.participantes * 1.5))
+                                            }
                                             soldTickets={raffle.participantes}
                                             userTickets={userTickets}
                                             targetDate={raffle.dataFim}
