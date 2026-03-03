@@ -35,11 +35,11 @@ const Hero: React.FC = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <Button variant="hero" size="xl">
+            <Button variant="hero" size="xl" onClick={() => document.getElementById('sorteios')?.scrollIntoView({ behavior: 'smooth' })}>
               <Ticket className="h-5 w-5" />
               Ver Sorteios
             </Button>
-            <Button variant="outline" size="xl">
+            <Button variant="outline" size="xl" onClick={() => document.getElementById('nfts')?.scrollIntoView({ behavior: 'smooth' })}>
               <Trophy className="h-5 w-5" />
               Comprar NFTs
             </Button>
