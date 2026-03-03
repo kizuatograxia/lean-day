@@ -389,14 +389,6 @@ const RaffleDetails: React.FC = () => {
                                             <ActivityFeed raffleId={raffle.id} />
                                         </div>
                                         <Button
-                                            variant="outline"
-                                            className="h-12 text-sm font-black gap-2 rounded-2xl border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
-                                            onClick={() => setIsDrawing(true)}
-                                        >
-                                            <Trophy className="w-4 h-4 text-yellow-400" />
-                                            Ver Sorteio em Ação
-                                        </Button>
-                                        <Button
                                             variant="hero"
                                             className="h-14 text-base font-black gap-3 rounded-2xl"
                                             onClick={() => {
