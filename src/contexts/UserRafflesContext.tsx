@@ -110,13 +110,15 @@ export const UserRafflesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const getTicketCount = useCallback((raffleId: string) => {
         const ur = userRaffles.find((ur) => ur.raffle.id === raffleId);
-        return ur?.ticketsComprados ?? 0;
+        // Try multiple field names in case mapping missed something
+        return (ur as any)?.ticketsComprados ?? (ur as any)?.ticket_count ?? (ur as any)?.tickets ?? 0;
     }, [userRaffles]);
 
     const getUserValue = useCallback((raffleId: string) => {
         const ur = userRaffles.find((ur) => ur.raffle.id === raffleId);
-        return ur?.totalValueContributed ?? 0;
+        return (ur as any)?.totalValueContributed ?? (ur as any)?.total_value ?? (ur as any)?.amount ?? 0;
     }, [userRaffles]);
+
 
     const getWonRaffles = useCallback(() => {
         if (!user) return [];

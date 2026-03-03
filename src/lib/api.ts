@@ -242,6 +242,9 @@ export const api = {
         // Ensure IDs are strings to match frontend types
         return data.map((ur: any) => ({
             ...ur,
+            // Explicitly resolve ticket count from any backend field name variant
+            ticketsComprados: ur.ticketsComprados ?? ur.ticket_count ?? ur.tickets_purchased ?? ur.tickets ?? 0,
+            totalValueContributed: ur.totalValueContributed ?? ur.total_value ?? ur.amount ?? ur.value_contributed ?? 0,
             raffle: {
                 id: String(ur.raffle.id),
                 titulo: ur.raffle.title,
@@ -251,7 +254,7 @@ export const api = {
                 premioValor: ur.raffle.prizeValue || 0,
                 dataFim: ur.raffle.drawDate,
                 custoNFT: ur.raffle.price,
-                participantes: 0, // Not provided in user raffle summary usually, or maybe we need to fetch it? Server returns 'status'
+                participantes: 0,
                 maxParticipantes: 0,
                 status: ur.raffle.status === 'active' ? 'ativo' : 'encerrado',
                 categoria: "geral",
@@ -268,6 +271,7 @@ export const api = {
                 shippedAt: ur.raffle.shipped_at
             }
         }));
+
     },
 
     // Admin
