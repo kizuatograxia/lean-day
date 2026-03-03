@@ -312,7 +312,7 @@ const RaffleDetails: React.FC = () => {
                         {/* Body */}
                         <main className="flex-1 overflow-y-auto custom-scrollbar">
                             <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-                                /* ---- LIVE VIEW MODE (Roulette plays inline) ---- */
+                                {/* ---- LIVE VIEW MODE (Roulette plays inline) ---- */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                                     {/* LEFT: MempoolLayoutSideBySide (circle + timer stacked) */}
                                     <div>
