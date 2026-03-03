@@ -66,7 +66,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
             </div>
 
             {/* Image Container */}
-            <div className="relative w-full aspect-video md:aspect-auto md:h-auto overflow-hidden bg-secondary/30 border-b border-border/50">
+            <div className="relative w-full aspect-square md:aspect-auto md:h-auto overflow-hidden bg-secondary/30 border-b border-border/50">
                 <img
                     src={raffle.imagem}
                     alt={raffle.titulo}
