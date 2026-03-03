@@ -436,8 +436,8 @@ const RaffleDetails: React.FC = () => {
                                                 key={idx}
                                                 onClick={() => setActiveImage(url)}
                                                 className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${activeImage === url
-                                                        ? "border-primary scale-105 shadow-glow"
-                                                        : "border-transparent opacity-50 hover:opacity-100 hover:border-border"
+                                                    ? "border-primary scale-105 shadow-glow"
+                                                    : "border-transparent opacity-50 hover:opacity-100 hover:border-border"
                                                     }`}
                                             >
                                                 <img src={url} alt={`${raffle.titulo} ${idx + 1}`} className="w-full h-full object-cover" />
@@ -447,7 +447,7 @@ const RaffleDetails: React.FC = () => {
                                 )}
 
                                 {/* Main image — adapts to natural aspect ratio, no cropping */}
-                                <div className="relative flex-1 overflow-hidden rounded-[1.3rem] min-h-[280px] max-h-[560px] flex items-center justify-center bg-black/40">
+                                <div className="relative flex-1 overflow-hidden rounded-[1.3rem] min-h-[280px] max-h-[560px] flex items-center justify-center">
                                     <img
                                         src={activeImage}
                                         alt={raffle.titulo}
