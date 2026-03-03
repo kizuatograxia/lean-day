@@ -83,23 +83,26 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Build individual tiles: 1 tile per ticket
+  // Build individual tiles: proportional representation within maxDisplay
   const tiles = useMemo(() => {
     const list: { id: string; type: "user" | "pool" }[] = [];
+    const total = Math.max(totalTickets, userTickets, 1);
 
-    const cappedUser = Math.min(userTickets, maxDisplay);
-    for (let i = 0; i < cappedUser; i++) {
+    // Scale both pools proportionally so ratio is preserved
+    const userDisplayCount = Math.min(
+      Math.round((userTickets / total) * maxDisplay),
+      maxDisplay
+    );
+    const poolDisplayCount = maxDisplay - userDisplayCount;
+
+    for (let i = 0; i < userDisplayCount; i++) {
       list.push({ id: `user-${i}`, type: "user" });
     }
-
-    const otherMax = maxDisplay - cappedUser;
-    const otherCount = Math.min(Math.max(0, totalTickets - userTickets), otherMax);
-    for (let i = 0; i < otherCount; i++) {
+    for (let i = 0; i < poolDisplayCount; i++) {
       list.push({ id: `pool-${i}`, type: "pool" });
     }
 
     // Shuffle so user tiles distribute throughout circle (not all at top under timer)
-    // Use stable seed based on counts so it doesn't re-randomize on every render
     const seed = userTickets * 9973 + totalTickets;
     let s = seed;
     const shuffled = [...list];
@@ -111,6 +114,7 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
 
     return packTiles(shuffled, variant);
   }, [totalTickets, userTickets, maxDisplay, variant]);
+
 
   // Roulette spin order (clockwise for circular, sequential for square)
   const spinOrder = useMemo(
