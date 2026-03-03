@@ -164,7 +164,7 @@ export function LiveRoulette({ raffle, onClose }: LiveRouletteProps) {
 
     // Start Spin
     const startSpin = useCallback(async () => {
-        if (status !== 'ready' || extendedList.length === 0 || CARD_WIDTH === 0) return;
+        if (status !== 'ready' || extendedList.length === 0 || containerWidth === 0) return;
 
         setStatus('spinning');
         lastTickPosition.current = 0;
