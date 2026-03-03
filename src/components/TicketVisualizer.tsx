@@ -222,12 +222,12 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
               >
                 <div
                   className={`w-full h-full rounded-[1px] border transition-all duration-100 relative overflow-hidden ${winner
-                      ? "border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.8)]"
-                      : highlighted
-                        ? "border-green-400 shadow-[0_0_20px_rgba(34,197,94,0.8)]"
-                        : isUserBlock
-                          ? "border-green-500/60 shadow-[0_0_10px_rgba(34,197,94,0.4)]"
-                          : "border-white/10"
+                    ? "border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.8)]"
+                    : highlighted
+                      ? "border-green-400 shadow-[0_0_20px_rgba(34,197,94,0.8)]"
+                      : isUserBlock
+                        ? "border-green-500/60 shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+                        : "border-white/10"
                     }`}
                   style={{ backgroundColor: getBlockColor(block, idx) }}
                 >
@@ -269,8 +269,11 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
 
   if (variant === "circular") {
     return (
-      <div className="relative w-full">
-        {visualizerContent}
+      <div className="relative w-full aspect-square">
+        {/* Circle clip: blocks are strictly contained inside */}
+        <div className="absolute inset-0 rounded-full overflow-hidden">
+          {visualizerContent}
+        </div>
         {/* Floating % badges */}
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-3 pointer-events-none">
           <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full">

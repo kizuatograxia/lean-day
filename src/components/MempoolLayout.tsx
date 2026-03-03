@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Clock, Activity } from "lucide-react";
 import { TicketVisualizer } from "./TicketVisualizer";
 
-// Transparent circular countdown — overlays on top of the mempool circle
+// Compact timer — no card, just text for use below the circle
 export const CircularCountdown: React.FC<{
     targetDate: string,
     onExpire?: () => void,
@@ -37,76 +37,64 @@ export const CircularCountdown: React.FC<{
     const strokeDashoffset = circumference * (1 - timeLeft.progress);
 
     return (
-        // Fully transparent — NO background, no border, no card
-        <div className="relative w-full h-full flex items-center justify-center">
-            {/* Ending badge */}
-            {isEnding && !isExpired && (
-                <div className="absolute top-0 right-0 flex items-center gap-1.5 bg-destructive/80 text-white px-3 py-1 rounded-full text-xs font-bold z-20">
+        <div className="flex flex-col items-center gap-3">
+            {/* Progress arc — decorative ring around the text block */}
+            <div className="relative w-56 h-56">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                    <circle
+                        cx="100" cy="100" r="90"
+                        fill="none"
+                        stroke={isExpired ? "hsl(142, 70%, 45%)" : "hsl(var(--primary))"}
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        className="transition-all duration-1000 ease-linear"
+                        style={{ filter: "drop-shadow(0 0 6px hsl(var(--primary) / 0.7))" }}
+                    />
+                </svg>
+                {/* Time text in center of ring */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    {isExpired ? (
+                        <div className="flex flex-col items-center gap-2">
+                            <Activity className="w-10 h-10 text-green-400 animate-spin" />
+                            <span className="text-sm font-black text-green-400 uppercase tracking-widest">SORTEANDO</span>
+                        </div>
+                    ) : timeLeft.days > 0 ? (
+                        <>
+                            <div className="text-5xl font-black text-white tabular-nums leading-none">
+                                {String(timeLeft.days).padStart(2, "0")}
+                                <span className="text-white/30 mx-0.5">:</span>
+                                {String(timeLeft.hours).padStart(2, "0")}
+                            </div>
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mt-1">Dias : Horas</span>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-4xl font-black text-white tabular-nums leading-none">
+                                {String(timeLeft.hours).padStart(2, "0")}
+                                <span className="text-white/30 mx-0.5 animate-pulse">:</span>
+                                {String(timeLeft.minutes).padStart(2, "0")}
+                                <span className="text-white/30 mx-0.5 animate-pulse">:</span>
+                                {String(timeLeft.seconds).padStart(2, "0")}
+                            </div>
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mt-1">H : M : S</span>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* "Próximo sorteio" pill below the ring */}
+            {!isExpired && isEnding && (
+                <div className="flex items-center gap-1.5 bg-destructive/20 text-destructive px-3 py-1 rounded-full border border-destructive/30">
                     <Clock className="w-3 h-3" />
-                    EM BREVE
+                    <span className="text-xs font-bold uppercase tracking-widest">Encerra em breve</span>
                 </div>
             )}
-
-            {/* Large SVG ring — fills entire container */}
-            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
-                {/* Subtle track */}
-                <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-                {/* Progress arc */}
-                <circle
-                    cx="100" cy="100" r="90"
-                    fill="none"
-                    stroke={isExpired ? "hsl(142, 70%, 45%)" : "hsl(var(--primary))"}
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    className="transition-all duration-1000 ease-linear"
-                    style={{ filter: "drop-shadow(0 0 8px hsl(var(--primary)))" }}
-                />
-            </svg>
-
-            {/* Center text — transparent pill so mempool shows through */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                {isExpired ? (
-                    <div className="flex flex-col items-center gap-2">
-                        <Activity className="w-16 h-16 text-green-400 animate-spin" />
-                        <span className="text-lg font-black text-green-400 uppercase tracking-widest drop-shadow-lg">
-                            SORTEANDO
-                        </span>
-                    </div>
-                ) : timeLeft.days > 0 ? (
-                    <>
-                        <div className="text-7xl font-black text-white tabular-nums leading-none drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
-                            {String(timeLeft.days).padStart(2, "0")}
-                            <span className="text-white/40 mx-1">:</span>
-                            {String(timeLeft.hours).padStart(2, "0")}
-                        </div>
-                        <span className="text-xs font-bold text-white/50 uppercase tracking-[0.3em] mt-2">
-                            Dias : Horas
-                        </span>
-                    </>
-                ) : (
-                    <>
-                        <div className="text-6xl font-black text-white tabular-nums leading-none drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
-                            {String(timeLeft.hours).padStart(2, "0")}
-                            <span className="text-white/40 mx-0.5 animate-pulse">:</span>
-                            {String(timeLeft.minutes).padStart(2, "0")}
-                            <span className="text-white/40 mx-0.5 animate-pulse">:</span>
-                            {String(timeLeft.seconds).padStart(2, "0")}
-                        </div>
-                        <span className="text-xs font-bold text-white/50 uppercase tracking-[0.3em] mt-2">
-                            H : M : S
-                        </span>
-                    </>
-                )}
-
-                {/* "Próximo sorteio" label below numbers */}
-                {!isExpired && (
-                    <div className="mt-3 px-4 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/10">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Próximo Sorteio</span>
-                    </div>
-                )}
-            </div>
+            {!isExpired && !isEnding && (
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em]">Próximo Sorteio</span>
+            )}
         </div>
     );
 };
@@ -119,7 +107,7 @@ interface MempoolLayoutProps {
     isDrawing?: boolean;
 }
 
-// Main layout: mempool circle fills the square, timer overlays on top (transparent)
+// Main layout: circle on top (blocks clipped inside), timer below
 export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
     totalTickets,
     userTickets,
@@ -128,22 +116,19 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
     isDrawing = false,
 }) => {
     return (
-        <div className="flex flex-col items-center gap-4">
-            {/* Stacked: circle + transparent timer overlay */}
-            <div className="relative w-full max-w-[480px] aspect-square">
-                {/* Mempool visualizer — fills the square */}
+        <div className="flex flex-col items-center gap-6">
+            {/* CIRCLE — blocks clipped to circle boundary by TicketVisualizer */}
+            <div className="w-full max-w-[480px] aspect-square">
                 <TicketVisualizer
                     totalTickets={totalTickets}
                     userTickets={userTickets}
                     variant="circular"
                     isDrawing={isDrawing}
                 />
-
-                {/* Timer overlaid on top — fully transparent, above blocks */}
-                <div className="absolute inset-0 p-[10%] z-50 pointer-events-none">
-                    <CircularCountdown targetDate={targetDate} onExpire={onExpire} />
-                </div>
             </div>
+
+            {/* TIMER — below the circle, compact ring + numbers */}
+            <CircularCountdown targetDate={targetDate} onExpire={onExpire} />
 
             {/* Legend */}
             <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-widest">
@@ -160,8 +145,6 @@ export const MempoolLayout: React.FC<MempoolLayoutProps> = ({
     );
 };
 
-// Side-by-side also overlays timer (same component, same transparency)
 export const MempoolLayoutSideBySide: React.FC<MempoolLayoutProps> = (props) => {
-    // On mobile → stacked; large → side by side but circle is large
     return <MempoolLayout {...props} />;
 };
