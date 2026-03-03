@@ -127,7 +127,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                     </div>
 
                     {/* NFT Cost */}
-                    <div className="flex items-center justify-between py-1.5 px-2 md:py-2 md:px-3 bg-secondary/50 rounded-md md:rounded-lg">
+                    <div className="hidden md:flex items-center justify-between py-1.5 px-2 md:py-2 md:px-3 bg-secondary/50 rounded-md md:rounded-lg">
                         <span className="text-[10px] md:text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mr-2">
                             Custo <span className="hidden sm:inline">para participar</span>
                         </span>

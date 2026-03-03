@@ -24,7 +24,7 @@ const RaffleGrid: React.FC<RaffleGridProps> = ({ raffles }) => {
                 </div>
             </div>
             <div className="w-full">
-                <div className="columns-2 lg:columns-3 gap-6">
+                <div className="columns-2 lg:columns-3 gap-3 md:gap-6">
                     {raffles.map((raffle, index) => (
                         <div key={raffle.id} className="inline-block w-full break-inside-avoid mb-6">
                             <RaffleCard raffle={raffle} index={index} />

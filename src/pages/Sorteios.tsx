@@ -98,7 +98,7 @@ const RaffleCardWrapper = ({ raffle, index }: { raffle: Raffle; index: number })
                   <Ticket className="h-4 w-4" />
                   <span className="text-sm">{raffle.participantes} <span className="hidden sm:inline">cotas vendidas</span></span>
                 </div>
-                <Badge className="bg-primary/10 text-primary border-0">
+                <Badge className="hidden md:inline-flex bg-primary/10 text-primary border-0">
                   <Ticket className="h-3 w-3 mr-1" />
                   R$ {raffle.custoNFT}
                 </Badge>
@@ -282,7 +282,7 @@ const Sorteios: React.FC = () => {
           </div>
         ) : (
           <div className="w-full">
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+            <div className="columns-2 lg:columns-3 gap-3 md:gap-6">
               {filteredRaffles.map((raffle, index) => (
                 <div key={raffle.id} className="inline-block w-full break-inside-avoid mb-6">
                   <RaffleCardWrapper raffle={raffle} index={index} />
