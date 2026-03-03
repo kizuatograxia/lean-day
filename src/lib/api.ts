@@ -501,9 +501,13 @@ export const api = {
     },
 
     drawRaffle: async (password: string, id: string) => {
+        const token = localStorage.getItem('auth_token');
         const res = await fetch(`${API_URL}/raffles/${id}/draw`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+            },
             body: JSON.stringify({ password }),
         });
         if (!res.ok) {
