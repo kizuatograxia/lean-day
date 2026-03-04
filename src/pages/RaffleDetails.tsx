@@ -223,7 +223,7 @@ const RaffleDetails: React.FC = () => {
             imagem: data.image_url && !data.image_url.includes('example.com')
               ? data.image_url : "https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80",
             status: data.status === 'active' ? 'ativo' : 'encerrado',
-            premio: data.prize_pool, premioValor: data.prize_value || 0,
+            premio: data.prize_pool || `R$ ${data.prize_value}`, premioValor: data.prize_value || 0,
             dataFim: data.draw_date || "2024-12-31", custoNFT: data.ticket_price,
             participantes: parseInt(data.tickets_sold) || 0,
             maxParticipantes: parseInt(data.max_tickets) || parseInt(data.total_tickets) || 0,
@@ -576,7 +576,11 @@ const RaffleDetails: React.FC = () => {
                       return (
                         <button key={nft.id} onClick={() => toggleSelection(nft.id, nft.quantidade)}
                           className={`border rounded-md p-2 flex gap-2 items-center bg-transparent transition-colors text-sm ${isSelected ? "border-blue-600 dark:border-blue-400 bg-blue-600/5" : "border-border hover:border-foreground/40"}`}>
-                          <span className="text-lg">{nft.emoji}</span>
+                          {nft.image ? (
+                            <img src={nft.image} alt={nft.nome} className="w-6 h-6 rounded-sm object-cover" />
+                          ) : (
+                            <span className="text-lg">{nft.emoji}</span>
+                          )}
                           <span className="font-medium text-foreground">{nft.nome}</span>
                           <span className="text-muted-foreground text-xs">x{nft.quantidade}</span>
                         </button>
@@ -590,7 +594,7 @@ const RaffleDetails: React.FC = () => {
               <div className="bg-muted/50 rounded-md p-4 mb-5 space-y-2">
                 <p className="text-sm font-semibold text-foreground mb-2">O que você precisa saber:</p>
                 <ul className="space-y-1.5 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2"><span className="text-foreground">•</span> Prêmio Total: <strong className="text-foreground">R$ {raffle.premioValor.toLocaleString("pt-BR")}</strong></li>
+                  <li className="flex items-start gap-2"><span className="text-foreground">•</span> Prêmio Total: <strong className="text-foreground">{raffle.premio}</strong></li>
                   <li className="flex items-start gap-2"><span className="text-foreground">•</span> Oportunidade Atual: <strong className="text-foreground">{currentChance.toFixed(1)}%</strong></li>
                   <li className="flex items-start gap-2"><span className="text-foreground">•</span> Encerramento: <strong className="text-foreground">{dataFimFormatted}</strong></li>
                   <li className="flex items-start gap-2"><span className="text-foreground">•</span> Prêmio de luxo • Sorteio auditado</li>
@@ -651,7 +655,7 @@ const RaffleDetails: React.FC = () => {
             <tbody>
               {[
                 ["Prêmio", raffle.premio],
-                ["Valor do Prêmio", `R$ ${raffle.premioValor.toLocaleString("pt-BR")}`],
+                ["Valor de face", `R$ ${raffle.premioValor.toLocaleString("pt-BR")}`],
                 ["Preço por Bilhete", `R$ ${raffle.custoNFT}`],
                 ["Cotas Vendidas", `${raffle.participantes}`],
                 ["Total de Cotas", totalSlots > 0 ? `${totalSlots}` : "Ilimitado"],
@@ -712,8 +716,8 @@ const RaffleDetails: React.FC = () => {
                           className={`flex items-center gap-3 p-3 rounded-md border-2 transition-all cursor-pointer ${isSelected ? "border-blue-600 dark:border-blue-400 bg-blue-600/5" : "border-border hover:border-foreground/30"}`}
                           onClick={() => toggleSelection(nft.id, nft.quantidade)}
                         >
-                          <div className={`w-12 h-12 rounded-md bg-gradient-to-br ${rarityColors[nft.raridade] || "from-gray-500 to-gray-600"} flex items-center justify-center text-2xl shadow-sm`}>
-                            {nft.emoji}
+                          <div className={`w-12 h-12 rounded-md bg-gradient-to-br overflow-hidden ${rarityColors[nft.raridade] || "from-gray-500 to-gray-600"} flex items-center justify-center text-2xl shadow-sm`}>
+                            {nft.image ? <img src={nft.image} alt={nft.nome} className="w-full h-full object-cover" /> : nft.emoji}
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-foreground text-sm truncate">{nft.nome}</h4>
