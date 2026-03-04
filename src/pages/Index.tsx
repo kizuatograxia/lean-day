@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Hero from "@/components/Hero";
-import BannerCarousel from "@/components/BannerCarousel";
 import CategoryNav from "@/components/CategoryNav";
 import RaffleGrid from "@/components/RaffleGrid";
 import NFTGrid from "@/components/NFTGrid";
@@ -41,10 +40,6 @@ const Index: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Layout components handled by MainLayout */}
-
-      <div className="container mx-auto px-4 pt-6">
-        <BannerCarousel />
-      </div>
 
       <Hero />
 
