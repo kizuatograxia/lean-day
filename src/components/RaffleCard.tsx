@@ -51,7 +51,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
 
     return (
         <article
-            className={`group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-elevated hover:border-primary/30 hover:-translate-y-1 animate-fade-in flex flex-col h-full ${disableNavigation ? "" : "cursor-pointer"}`}
+            className={`group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-elevated hover:border-primary/30 hover:-translate-y-1 animate-fade-in flex flex-col h-full md:h-auto ${disableNavigation ? "" : "cursor-pointer"}`}
             style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => !disableNavigation && navigate(`/raffle/${raffle.id}`)}
         >
@@ -66,7 +66,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
             </div>
 
             {/* Image Container */}
-            <div className="relative w-full aspect-square md:aspect-auto md:h-auto overflow-hidden bg-secondary/30 border-b border-border/50">
+            <div className="relative w-full aspect-video md:aspect-auto overflow-hidden bg-secondary/30">
                 <img
                     src={raffle.imagem}
                     alt={raffle.titulo}
@@ -104,9 +104,9 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                     {raffle.titulo}
                 </h3>
 
-                {/* <p className="text-[11px] md:text-sm text-muted-foreground line-clamp-2 md:line-clamp-none mb-4 md:mb-6 flex-1 md:flex-initial">
+                <p className="text-[11px] md:text-sm text-muted-foreground line-clamp-2 mb-4 flex-1 md:flex-initial">
                     {raffle.descricao}
-                </p> */}
+                </p>
 
                 <div className="space-y-3 mt-auto">
                     {/* Progress Bar */}
@@ -138,12 +138,12 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                     {!disableNavigation && (
                         <div className="flex gap-1.5 md:gap-2">
                             <Button
-                                variant="outline"
-                                className="flex-1 hidden sm:flex h-8 md:h-10 text-xs md:text-sm px-2"
+                                variant="secondary"
+                                className="flex-1 h-8 md:h-10 text-[10px] md:text-sm px-1 md:px-2 bg-secondary/80 hover:bg-secondary border border-border/50 transition-all font-medium"
                                 onClick={handleMoreInfo}
                             >
-                                <Info className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                                Mais Info
+                                <Info className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-1.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                <span className="text-muted-foreground group-hover:text-foreground transition-colors">Detalhes</span>
                             </Button>
                             <Button
                                 variant="hero"
