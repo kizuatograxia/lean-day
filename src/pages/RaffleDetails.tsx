@@ -124,6 +124,7 @@ const RaffleDetails: React.FC = () => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [isLiveViewActive, setIsLiveViewActive] = useState(false);
     const [activeImage, setActiveImage] = useState<string>("");
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -684,9 +685,21 @@ const RaffleDetails: React.FC = () => {
                                 <Info className="w-5 h-5 text-primary" />
                                 <h3 className="text-lg md:text-xl font-black uppercase tracking-tight">Detalhes do Sorteio</h3>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed text-base md:text-lg italic">
-                                "{raffle.descricao}"
-                            </p>
+                            <div className="space-y-2">
+                                <p className={`text-muted-foreground leading-relaxed text-base md:text-lg italic ${!isDescriptionExpanded ? "line-clamp-3" : ""}`}>
+                                    "{raffle.descricao}"
+                                </p>
+                                {raffle.descricao && raffle.descricao.length > 150 && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 px-2 text-primary hover:bg-primary/10 hover:text-primary font-bold text-xs uppercase cursor-pointer"
+                                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                    >
+                                        {isDescriptionExpanded ? "Ler Menos" : "Ler Mais..."}
+                                    </Button>
+                                )}
+                            </div>
                         </motion.div>
                     </div>
 
