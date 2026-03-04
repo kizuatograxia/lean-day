@@ -11,6 +11,7 @@ import { RaffleEventsProvider } from "@/contexts/RaffleEventsContext";
 import { GlobalEventsListener } from "@/components/GlobalEventsListener";
 import { RaffleParticipationWidget } from "@/components/RaffleParticipationWidget";
 import MainLayout from "@/components/MainLayout";
+import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -65,6 +66,7 @@ const App = () => {
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
+                      <ScrollToTop />
                       <Routes>
                         {/* Main Layout Routes */}
                         <Route element={<MainLayout />}>
