@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[75734],{28286(s,e,_){_.r(e),_.d(e,{default:()=>n});var c=_(96540),i=_(46942),a=_.n(i),r=_(65363),t=_(74848);const l=r.iconList.BlackFriday,h=s=>{let{className:e=""}=s;return(0,t.jsx)("svg",{className:a()("ui-search-icon ui-search-icon__black-friday",e),xmlns:"http://www.w3.org/2000/svg",width:"12",height:"12",viewBox:"0 0 12 12",children:(0,t.jsx)("use",{href:`#${l}`})})};h.ICON_ID=l;const n=(0,c.memo)(h)}}]);
+//# sourceMappingURL=black_friday_icon.ffdb8ea4.js.map

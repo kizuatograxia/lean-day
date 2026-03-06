@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[33698],{88288(s,e,i){i.r(e),i.d(e,{IconMessagePositiveV2:()=>p,default:()=>r});var _,t=i(96540),c=i(46942),o=i.n(c),a=i(93309),n=i(65363),l=i(74848);const v=n.iconList.IconMessagePositiveV2,p=s=>{let{className:e=""}=s;return(0,l.jsx)("div",{className:o()("ui-pdp-icon ui-pdp-icon--message-positive",e),children:_||(_=(0,l.jsx)(a._V,{src:"message-positive-v2.svg",alt:""}))})};p.ICON_ID=v;const r=(0,t.memo)(p)}}]);
+//# sourceMappingURL=rep_seller_attention_good_v2.ebb73f09.js.map

@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[213],{51601(e,l,r){r.r(l),r.d(l,{default:()=>s});var t=r(37808),i=r(74848);const s=e=>{var l;let{size:r,hierarchy:s,action:a}=e;return(0,i.jsx)("div",{className:"ui-seller-data-footer__container",children:(0,i.jsx)(t.$n,{size:r,hierarchy:s,href:a.target,srLabel:a.accessibility_text,fullWidth:!0,children:null==a||null===(l=a.label)||void 0===l?void 0:l.text})})}}}]);
+//# sourceMappingURL=components-footer.a1213fd3.js.map

@@ -32,6 +32,8 @@ const rarityColors: Record<string, string> = {
     raro: "from-blue-400 to-cyan-400",
     epico: "from-purple-500 to-pink-500",
     lendario: "from-yellow-400 to-orange-500",
+    mitico: "from-emerald-400 to-green-600",
+    celestial: "from-cyan-400 to-blue-600",
 };
 
 const rarityLabels: Record<string, string> = {
@@ -39,6 +41,8 @@ const rarityLabels: Record<string, string> = {
     raro: "Raro",
     epico: "Épico",
     lendario: "Lendário",
+    mitico: "Mítico",
+    celestial: "Celestial",
 };
 
 const Profile = () => {

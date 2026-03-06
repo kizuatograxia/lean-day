@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[13764],{53488(s,e,i){i.r(e),i.d(e,{IconQuestionAi:()=>r,default:()=>l});var n=i(96540),o=i(46942),t=i.n(o),_=i(65363),c=i(74848);const u=_.iconList.IconQuestionAi,r=s=>{let{className:e=""}=s;return(0,c.jsx)("svg",{className:t()("ui-pdp-icon ui-pdp-icon--questions-ai",e),viewBox:"0 0 21 20",version:"1.1",xmlns:"http://www.w3.org/2000/svg",children:(0,c.jsx)("use",{href:`#${u}`})})};r.ICON_ID=u;const l=(0,n.memo)(r)}}]);
+//# sourceMappingURL=question_ai.c7b486fc.js.map

@@ -40,6 +40,8 @@ const NFTMobilePreview: React.FC<NFTMobilePreviewProps> = ({ nfts }) => {
         raro: "Raro",
         epico: "Épico",
         lendario: "Lendário",
+        mitico: "Mítico",
+        celestial: "Celestial",
     };
 
     const rarityClasses: Record<string, string> = {
@@ -47,6 +49,8 @@ const NFTMobilePreview: React.FC<NFTMobilePreviewProps> = ({ nfts }) => {
         raro: "bg-blue-500/20 text-blue-300 border-blue-500/30",
         epico: "bg-purple-500/20 text-purple-300 border-purple-500/30",
         lendario: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+        mitico: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+        celestial: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
     };
 
     return (

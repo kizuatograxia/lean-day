@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[17831],{95709(s,t,e){e.r(t),e.d(t,{IconPauseButton:()=>a,default:()=>l});var n=e(96540),o=e(46942),u=e.n(o),_=e(65363),c=e(74848);const i=_.iconList.IconPauseButton,a=s=>{let{className:t=""}=s;return(0,c.jsx)("svg",{className:u()("ui-pdp-icon ui-pdp-icon--pause-button",t),xmlns:"http://www.w3.org/2000/svg",width:"24",height:"24",viewBox:"0 0 24 24",children:(0,c.jsx)("use",{href:`#${i}`})})};a.ICON_ID=i;const l=(0,n.memo)(a)}}]);
+//# sourceMappingURL=pause.79c4828f.js.map

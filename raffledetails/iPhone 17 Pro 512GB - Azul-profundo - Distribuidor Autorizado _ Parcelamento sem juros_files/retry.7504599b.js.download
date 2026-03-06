@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[88971],{29805(s,e,t){t.r(e),t.d(e,{IconRetryButton:()=>c,default:()=>a});var r,_=t(96540),l=t(46942),n=t.n(l),o=t(74848);const u="retry",c=s=>{let{className:e}=s;return(0,o.jsx)("svg",{className:n()("ui-pdp-icon ui-pdp-icon--retry-button",e),xmlns:"http://www.w3.org/2000/svg",width:"24",height:"24",viewBox:"0 0 24 24",children:r||(r=(0,o.jsx)("use",{href:`#${u}`}))})};c.defaultProps={className:null},c.ICON_ID=u;const a=(0,_.memo)(c)}}]);
+//# sourceMappingURL=retry.7504599b.js.map

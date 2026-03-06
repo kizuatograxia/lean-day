@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[56049],{2333(s,e,t){t.r(e),t.d(e,{IconUnmuteButton:()=>a,default:()=>i});var u,n=t(96540),_=t(46942),l=t.n(_),o=t(74848);const c="unmute",a=s=>{let{className:e}=s;return(0,o.jsx)("svg",{className:l()("ui-pdp-icon ui-pdp-icon--unmute-button",e),xmlns:"http://www.w3.org/2000/svg",width:"24",height:"24",viewBox:"0 0 24 24",children:u||(u=(0,o.jsx)("use",{href:`#${c}`}))})};a.defaultProps={className:null},a.ICON_ID=c;const i=(0,n.memo)(a)}}]);
+//# sourceMappingURL=unmute.6d9aa8da.js.map

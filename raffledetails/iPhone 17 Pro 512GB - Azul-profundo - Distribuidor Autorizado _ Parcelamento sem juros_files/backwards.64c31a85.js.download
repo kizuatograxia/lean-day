@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[92159],{369(s,t,c){c.r(t),c.d(t,{IconBackwardsButton:()=>r,default:()=>u});var e=c(96540),n=c(46942),o=c.n(n),_=c(65363),a=c(74848);const i=_.iconList.IconBackwardsButton,r=s=>{let{className:t=""}=s;return(0,a.jsx)("svg",{className:o()("ui-pdp-icon ui-pdp-icon--backwards-button",t),xmlns:"http://www.w3.org/2000/svg",width:"24",height:"24",viewBox:"0 0 24 24",children:(0,a.jsx)("use",{href:`#${i}`})})};r.ICON_ID=i;const u=(0,e.memo)(r)}}]);
+//# sourceMappingURL=backwards.64c31a85.js.map

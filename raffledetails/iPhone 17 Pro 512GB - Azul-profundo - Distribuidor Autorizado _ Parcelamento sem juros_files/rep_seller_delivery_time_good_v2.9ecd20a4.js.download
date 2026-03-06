@@ -1,0 +1,2 @@
+"use strict";(self.__LOADABLE_LOADED_CHUNKS__=self.__LOADABLE_LOADED_CHUNKS__||[]).push([[32848],{30246(i,s,e){e.r(s),e.d(s,{IconTimePositiveV2:()=>a,default:()=>p});var t,_=e(96540),c=e(46942),o=e.n(c),n=e(93309),l=e(65363),m=e(74848);const v=l.iconList.IconTimePositiveV2,a=i=>{let{className:s=""}=i;return(0,m.jsx)("div",{className:o()("ui-pdp-icon ui-pdp-icon--time-positive",s),children:t||(t=(0,m.jsx)(n._V,{alt:"",src:"time-positive-v2.svg"}))})};a.ICON_ID=v;const p=(0,_.memo)(a)}}]);
+//# sourceMappingURL=rep_seller_delivery_time_good_v2.9ecd20a4.js.map

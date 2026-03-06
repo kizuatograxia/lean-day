@@ -15,6 +15,8 @@ const rarityColors = {
     raro: "from-blue-400 to-cyan-500",
     epico: "from-purple-400 to-pink-500",
     lendario: "from-yellow-400 to-orange-500",
+    mitico: "from-emerald-400 to-green-600",
+    celestial: "from-cyan-400 to-blue-600",
 };
 
 const rarityLabels = {
@@ -22,6 +24,8 @@ const rarityLabels = {
     raro: "Raro",
     epico: "Épico",
     lendario: "Lendário",
+    mitico: "Mítico",
+    celestial: "Celestial",
 };
 
 const NFTCard: React.FC<NFTCardProps> = ({ nft, index }) => {
@@ -38,9 +42,11 @@ const NFTCard: React.FC<NFTCardProps> = ({ nft, index }) => {
 
     return (
         <article
-            className="group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-elevated hover:border-primary/30 hover:-translate-y-1 animate-fade-in"
+            className="group relative rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-elevated hover:border-primary/50 hover:-translate-y-1 animate-fade-in"
             style={{ animationDelay: `${index * 0.05}s` }}
         >
+            {/* Full Card Background Glow based on the animal color */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${nft.cor} opacity-20 dark:opacity-10 group-hover:opacity-30 transition-opacity duration-300`} />
             {/* Rarity Badge */}
             <div className={`absolute top-3 left-3 z-10 flex items-center gap-1 bg-gradient-to-r ${rarityColors[nft.raridade]} text-white px-2 py-1 rounded-lg text-xs font-bold`}>
                 <Sparkles className="h-3 w-3" />
@@ -71,7 +77,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ nft, index }) => {
             </div>
 
             {/* Content */}
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 relative z-10 bg-card/80 backdrop-blur-md border-t border-border/50">
                 <div>
                     <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">
                         {nft.nome}

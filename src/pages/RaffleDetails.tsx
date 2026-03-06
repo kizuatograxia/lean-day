@@ -376,6 +376,7 @@ const RaffleDetails: React.FC = () => {
   const rarityColors: Record<string, string> = {
     comum: "from-gray-400 to-gray-500", raro: "from-blue-400 to-cyan-500",
     epico: "from-purple-400 to-pink-500", lendario: "from-yellow-400 to-orange-500",
+    mitico: "from-emerald-400 to-green-600", celestial: "from-cyan-400 to-blue-600",
   };
 
   const allImages = raffle.image_urls && raffle.image_urls.length > 0
