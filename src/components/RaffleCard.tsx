@@ -51,7 +51,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
 
     return (
         <article
-            className={`group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-elevated hover:border-primary/30 hover:-translate-y-1 animate-fade-in flex flex-col h-full md:h-auto ${disableNavigation ? "" : "cursor-pointer"}`}
+            className={`group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-primary/30 animate-fade-in flex flex-col h-full md:h-auto ${disableNavigation ? "" : "cursor-pointer"}`}
             style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => !disableNavigation && navigate(`/raffle/${raffle.id}`)}
         >
@@ -134,9 +134,9 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                         <span className="font-bold text-[11px] md:text-sm text-primary whitespace-nowrap">{raffle.custoNFT} NFT</span>
                     </div>
 
-                    {/* Buttons - Hidden if disabled */}
+                    {/* Buttons - Hidden on desktop until hover, always visible on mobile if not disabled */}
                     {!disableNavigation && (
-                        <div className="flex gap-1.5 md:gap-2">
+                        <div className="flex gap-1.5 md:gap-2 transition-all duration-300 ease-out md:opacity-0 md:translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 relative z-20">
                             <Button
                                 variant="secondary"
                                 className="flex-1 h-8 md:h-10 text-[10px] md:text-sm px-1 md:px-2 bg-secondary/80 hover:bg-secondary border border-border/50 transition-all font-medium"
