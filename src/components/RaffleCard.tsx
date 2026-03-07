@@ -77,7 +77,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
             </div>
 
             {/* Image Container */}
-            <div className="relative w-full aspect-video md:aspect-auto overflow-hidden bg-background p-3 md:p-4">
+            <div className="relative w-full aspect-[4/5] md:aspect-auto overflow-hidden bg-background p-3 md:p-4">
                 <img
                     src={raffle.imagem}
                     alt={raffle.titulo}
