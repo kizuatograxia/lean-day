@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, Star, ShoppingCart, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, ShoppingCart, ArrowRight, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NFT } from "@/types/raffle";
 import { useWallet } from "@/contexts/WalletContext";
@@ -96,8 +96,8 @@ const NFTMobilePreview: React.FC<NFTMobilePreviewProps> = ({ nfts }) => {
                         {currentNFT.descricao}
                     </p>
                     <div className="flex items-center justify-center md:justify-start gap-4">
-                        <p className="text-2xl font-bold text-gradient">
-                            R$ {currentNFT.preco.toFixed(2).replace(".", ",")}
+                        <p className="text-2xl font-bold text-gradient flex items-center justify-center md:justify-start gap-1">
+                            <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {currentNFT.preco.toFixed(2).replace(".", ",")}
                         </p>
                         <Button
                             onClick={handleBuy}
