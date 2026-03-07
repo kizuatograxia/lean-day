@@ -19,7 +19,7 @@ const RaffleShowcase: React.FC = () => {
         const active = data.filter(r => r.status === 'ativo' || r.status === 'active');
         if (active.length > 0) setRaffles(active);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const featured = useMemo(() => raffles.slice(0, 6), [raffles]);
@@ -119,13 +119,13 @@ const RaffleShowcase: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Dots */}
-        <div className="flex gap-1 px-4 pb-4">
+        {/* Dots (Position Indicator) */}
+        <div className="flex gap-1 px-4 pb-4 mt-2">
           {featured.map((r, i) => (
             <button
               key={r.id}
               onClick={() => setActiveIndex(i)}
-              className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'bg-primary' : 'bg-border hover:bg-muted-foreground/30'}`}
+              className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'bg-foreground' : 'bg-border/50 hover:bg-muted-foreground/30'}`}
             />
           ))}
         </div>
