@@ -542,8 +542,9 @@ const RaffleDetails: React.FC = () => {
               <div className="mt-4 mb-2">
                 <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Valor da Cota</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[36px] font-light text-foreground tracking-tight">
-                    R$ {raffle.custoNFT?.toFixed?.(2) || raffle.custoNFT}
+                  <span className="text-[36px] font-light text-foreground tracking-tight flex items-center gap-2">
+                    <Ticket className="w-8 h-8 text-green-600 dark:text-green-500" />
+                    {raffle.custoNFT?.toFixed?.(2) || raffle.custoNFT}
                   </span>
                 </div>
               </div>
