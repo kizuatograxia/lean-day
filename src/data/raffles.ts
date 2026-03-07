@@ -8,7 +8,7 @@ export const nfts: NFT[] = [
         image: "/beijaflor-emoji.png",
         preco: 1.00,
         raridade: "comum",
-        descricao: "Representa a nota de 1 real. O Beija-flor-de-peito-azul simboliza beleza e agilidade.",
+        descricao: "NFT que garante até 10 cotas. O Beija-flor-de-peito-azul simboliza beleza e agilidade.",
         cor: "from-emerald-400 to-green-500",
     },
     {
@@ -18,7 +18,7 @@ export const nfts: NFT[] = [
         image: "/tartaruga-emoji.png",
         preco: 2.00,
         raridade: "comum",
-        descricao: "Representa a nota de 2 reais. A Tartaruga-de-pente vive nos mares tropicais.",
+        descricao: "NFT que garante até 10 cotas. A Tartaruga-de-pente vive nos mares tropicais.",
         cor: "from-blue-400 to-cyan-500",
     },
     {
@@ -28,7 +28,7 @@ export const nfts: NFT[] = [
         image: "/garca-emoji.png",
         preco: 5.00,
         raridade: "comum",
-        descricao: "Representa a nota de 5 reais. A Garça-branca-grande vive em todo o Brasil.",
+        descricao: "NFT que garante até 10 cotas. A Garça-branca-grande vive em todo o Brasil.",
         cor: "from-indigo-400 to-purple-500",
     },
     {
@@ -38,7 +38,7 @@ export const nfts: NFT[] = [
         image: "/arara-emoji.png",
         preco: 10.00,
         raridade: "raro",
-        descricao: "Representa a nota de 10 reais. A Arara-vermelha é um ícone da fauna.",
+        descricao: "NFT que garante até 10 cotas. A Arara-vermelha é um ícone da fauna.",
         cor: "from-red-500 to-rose-600",
     },
     {
@@ -48,7 +48,7 @@ export const nfts: NFT[] = [
         image: "/mico-emoji.png",
         preco: 20.00,
         raridade: "raro",
-        descricao: "Representa a nota de 20 reais. O Mico-leão-dourado é símbolo da conservação.",
+        descricao: "NFT que garante até 10 cotas. O Mico-leão-dourado é símbolo da conservação.",
         cor: "from-amber-400 to-orange-500",
     },
     {
@@ -58,7 +58,7 @@ export const nfts: NFT[] = [
         image: "/onca-emoji.png",
         preco: 50.00,
         raridade: "epico",
-        descricao: "Representa a nota de 50 reais. O maior felino das Américas.",
+        descricao: "NFT que garante até 10 cotas. O maior felino das Américas.",
         cor: "from-yellow-500 to-orange-600",
     },
     {
@@ -68,7 +68,7 @@ export const nfts: NFT[] = [
         image: "/garoupa-emoji.png",
         preco: 100.00,
         raridade: "epico",
-        descricao: "Representa a nota de 100 reais. Um peixe robusto e valioso.",
+        descricao: "NFT que garante até 10 cotas. Um peixe robusto e valioso.",
         cor: "from-cyan-500 to-blue-600",
     },
     {
@@ -78,7 +78,7 @@ export const nfts: NFT[] = [
         image: "/lobo-emoji.png",
         preco: 200.00,
         raridade: "lendario",
-        descricao: "Representa a nota de 200 reais. O grande canídeo do Cerrado.",
+        descricao: "NFT que garante até 10 cotas. O grande canídeo do Cerrado.",
         cor: "from-stone-500 to-neutral-600",
     },
     {
