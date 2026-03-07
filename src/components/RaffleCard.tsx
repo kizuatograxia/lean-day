@@ -66,17 +66,17 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
             </div>
 
             {/* Image Container */}
-            <div className="relative w-full aspect-video md:aspect-auto overflow-hidden bg-secondary/30">
+            <div className="relative w-full aspect-video md:aspect-auto overflow-hidden bg-background p-3 md:p-4">
                 <img
                     src={raffle.imagem}
                     alt={raffle.titulo}
-                    className="w-full h-full md:h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full md:h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     onError={(e) => {
                         e.currentTarget.src = "https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80";
                     }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                 {/* Winner Overlay */}
                 {raffle.status === 'encerrado' && raffle.winner && (
