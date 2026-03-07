@@ -3,6 +3,7 @@ import { X, ShoppingCart, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/contexts/WalletContext";
 import { useNavigate } from "react-router-dom";
+import MempoolBackground from "@/components/MempoolBackground";
 
 interface WalletDrawerProps {
     isOpen: boolean;
@@ -22,6 +23,7 @@ const WalletDrawer: React.FC<WalletDrawerProps> = ({ isOpen, onClose }) => {
     const { cartItems, getTotalNFTs, removeFromCart } = useWallet();
     const totalNFTs = getTotalNFTs();
     const navigate = useNavigate();
+    const statsRef = React.useRef<HTMLDivElement>(null);
 
     const handleCheckout = () => {
         onClose();
@@ -62,14 +64,19 @@ const WalletDrawer: React.FC<WalletDrawerProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Stats */}
-                    <div className="p-4 bg-gradient-hero">
-                        <div className="flex items-center justify-between">
+                    <div ref={statsRef} className="relative p-5 bg-background border-b border-border overflow-hidden">
+                        <MempoolBackground containerRef={statsRef} />
+                        {/* Dark overlays to make the effect subtle yet visible */}
+                        <div className="absolute inset-0 bg-background/80 pointer-events-none z-[1]" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-primary/20 pointer-events-none z-[1]" />
+
+                        <div className="relative z-10 flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Total de NFTs</p>
-                                <p className="text-3xl font-bold text-gradient">{totalNFTs}</p>
+                                <p className="text-sm text-muted-foreground font-medium mb-1">Total de NFTs</p>
+                                <p className="text-3xl font-bold text-foreground drop-shadow-sm">{totalNFTs}</p>
                             </div>
-                            <div className="p-3 bg-primary/20 rounded-xl">
-                                <Sparkles className="h-8 w-8 text-primary" />
+                            <div className="p-3 bg-primary/20 backdrop-blur-md rounded-xl border border-primary/20 shadow-inner">
+                                <Sparkles className="h-8 w-8 text-primary drop-shadow-glow" />
                             </div>
                         </div>
                     </div>
