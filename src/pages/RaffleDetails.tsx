@@ -401,7 +401,10 @@ const RaffleDetails: React.FC = () => {
                       {nft.image ? <img src={nft.image} alt={nft.nome} className="w-7 h-7 rounded object-cover" /> : <span>{nft.emoji}</span>}
                       <span className="font-medium">{nft.nome}</span>
                     </div>
-                    <span className="font-semibold text-green-600 dark:text-green-500">R$ {nft.preco.toFixed(2)}</span>
+                    <span className="font-semibold text-green-600 dark:text-green-500 flex items-center gap-1">
+                      <Ticket className="w-3.5 h-3.5" />
+                      {nft.preco.toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -701,7 +704,10 @@ const RaffleDetails: React.FC = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-foreground text-sm truncate">{nft.nome}</h4>
-                            <span className="text-sm font-bold text-green-600 dark:text-green-500">R$ {nft.preco.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-green-600 dark:text-green-500 flex items-center gap-1">
+                              <Ticket className="w-3.5 h-3.5" />
+                              {nft.preco.toFixed(2)}
+                            </span>
                           </div>
                           {isSelected && (
                             <div className="flex items-center gap-1 bg-muted rounded border border-border p-0.5" onClick={e => e.stopPropagation()}>
@@ -726,9 +732,12 @@ const RaffleDetails: React.FC = () => {
                       <span className="text-muted-foreground">Bilhetes</span>
                       <span className="font-semibold text-foreground">{ticketPrice > 0 ? Math.floor(selectedValue / ticketPrice) : 0}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Valor total</span>
-                      <span className="font-semibold text-foreground">R$ {selectedValue.toFixed(2)}</span>
+                      <span className="font-semibold text-foreground flex items-center gap-1">
+                        <Ticket className="w-4 h-4 text-green-600 dark:text-green-500" />
+                        {selectedValue.toFixed(2)}
+                      </span>
                     </div>
                     <div className="border-t border-border pt-3 flex justify-between">
                       <span className="text-muted-foreground">Chance potencial</span>
