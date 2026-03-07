@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Clock, Users, Ticket, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Raffle } from "@/types/raffle";
@@ -20,6 +20,17 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
     const navigate = useNavigate();
     const totalNFTs = getTotalNFTs();
     const alreadyParticipating = isParticipating(raffle.id);
+    const [isExpandedOnMobile, setIsExpandedOnMobile] = useState(false);
+
+    const handleCardClick = () => {
+        if (disableNavigation) return;
+
+        if (window.innerWidth < 768) {
+            setIsExpandedOnMobile(!isExpandedOnMobile);
+        } else {
+            navigate(`/raffle/${raffle.id}`);
+        }
+    };
 
     const handleParticipate = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -53,7 +64,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
         <article
             className={`group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-primary/30 animate-fade-in flex flex-col h-full md:h-auto ${disableNavigation ? "" : "cursor-pointer"}`}
             style={{ animationDelay: `${index * 0.1}s` }}
-            onClick={() => !disableNavigation && navigate(`/raffle/${raffle.id}`)}
+            onClick={handleCardClick}
         >
             {/* Status Badge */}
             <div className="absolute top-2 left-2 md:top-4 md:left-4 z-10 scale-[0.85] md:scale-100 origin-top-left">
@@ -104,11 +115,11 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                     {raffle.titulo}
                 </h3>
 
-                <p className="text-[11px] md:text-sm text-muted-foreground line-clamp-2 mb-4 flex-1 md:flex-initial">
+                <p className="hidden md:block text-[11px] md:text-sm text-muted-foreground line-clamp-2 mb-4 flex-1 md:flex-initial">
                     {raffle.descricao}
                 </p>
 
-                <div className="space-y-3 mt-auto">
+                <div className={`space-y-3 mt-auto overflow-hidden transition-all duration-300 ease-in-out md:max-h-[500px] md:opacity-100 md:mt-auto ${isExpandedOnMobile ? 'max-h-[500px] opacity-100 mt-3 md:mt-auto' : 'max-h-0 opacity-0 m-0 md:m-auto'}`}>
                     {/* Progress Bar */}
                     <div className="space-y-1">
                         <div className="flex justify-between text-[10px] md:text-xs text-muted-foreground">
