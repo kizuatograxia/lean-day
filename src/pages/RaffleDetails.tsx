@@ -567,29 +567,6 @@ const RaffleDetails: React.FC = () => {
                 <p className="text-xs text-muted-foreground">Distribuidor Autorizado | Mais de 10 mil sorteios entregues</p>
               </div>
 
-              {/* Variants / NFT selection inline (compact) */}
-              {availableNFTs.length > 0 && (
-                <div className="mb-5">
-                  <p className="text-sm font-semibold text-foreground mb-2">Seus NFTs disponíveis:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {availableNFTs.slice(0, 4).map(nft => {
-                      const isSelected = (selectedNFTs[nft.id] || 0) > 0;
-                      return (
-                        <button key={nft.id} onClick={() => toggleSelection(nft.id, nft.quantidade)}
-                          className={`border rounded-md p-2 flex gap-2 items-center bg-transparent transition-colors text-sm ${isSelected ? "border-blue-600 dark:border-blue-400 bg-blue-600/5" : "border-border hover:border-foreground/40"}`}>
-                          {nft.image ? (
-                            <img src={nft.image} alt={nft.nome} className="w-6 h-6 rounded-sm object-cover" />
-                          ) : (
-                            <span className="text-lg">{nft.emoji}</span>
-                          )}
-                          <span className="font-medium text-foreground">{nft.nome}</span>
-                          <span className="text-muted-foreground text-xs">x{nft.quantidade}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               {/* Tech Specs Mini */}
               <div className="bg-muted/50 rounded-md p-4 mb-5 space-y-2">
@@ -622,10 +599,10 @@ const RaffleDetails: React.FC = () => {
               <div className="space-y-2">
                 <button
                   className="bg-blue-600 hover:bg-blue-700 text-white w-full py-4 rounded-[6px] font-semibold text-[16px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  disabled={isProcessing || selectedCount === 0 || raffle.status !== 'ativo'}
-                  onClick={handleParticipate}
+                  disabled={raffle.status !== 'ativo'}
+                  onClick={() => document.getElementById("nft-selection")?.scrollIntoView({ behavior: "smooth" })}
                 >
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Participar agora"}
+                  Participar agora
                 </button>
                 <button
                   className="bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 w-full py-4 rounded-[6px] font-semibold text-[16px] transition-colors flex items-center justify-center gap-2"
