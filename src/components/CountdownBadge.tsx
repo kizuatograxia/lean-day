@@ -71,7 +71,11 @@ export function CountdownBadge({ targetDate, className }: CountdownBadgeProps) {
         <div className={cn("flex items-center gap-1 bg-primary text-primary-foreground px-2 py-1 rounded-lg text-xs font-bold tabular-nums tracking-tight", className)}>
             <Clock className="h-3 w-3 mr-0.5" />
             <span>
-                {timeLeft.days}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
+                {timeLeft.days === 0 && timeLeft.hours === 0 ? (
+                    `${String(timeLeft.minutes).padStart(2, '0')}m ${String(timeLeft.seconds).padStart(2, '0')}s`
+                ) : (
+                    `${timeLeft.days > 0 ? `${timeLeft.days}d ` : ''}${String(timeLeft.hours).padStart(2, '0')}h ${String(timeLeft.minutes).padStart(2, '0')}m`
+                )}
             </span>
         </div>
     );
