@@ -68,9 +68,11 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                 onClick={handleCardClick}
             >
                 {/* Status Badge */}
+                {/* 
                 <div className="absolute top-2 left-2 md:top-4 md:left-4 z-10 scale-[0.85] md:scale-100 origin-top-left">
                     <CountdownBadge targetDate={raffle.dataFim} />
-                </div>
+                </div> 
+                */}
 
                 {/* Prize Value Badge */}
                 <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 bg-background/80 backdrop-blur-sm text-foreground px-1.5 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold border border-border">
