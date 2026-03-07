@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, QrCode, Copy, Check, ShoppingCart, Loader2 } from "lucide-react";
+import { ArrowLeft, QrCode, Copy, Check, ShoppingCart, Loader2, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,7 @@ const Checkout: React.FC = () => {
             });
             toast({
                 title: "Cupom aplicado!",
-                description: `Desconto de R$ ${res.discount.toFixed(2)}`,
+                description: `Desconto de ${Math.floor(res.discount)}`,
             });
         } catch (error: any) {
             setAppliedCoupon(null);
@@ -248,7 +248,7 @@ const Checkout: React.FC = () => {
                                         </div>
                                         <div className="text-right">
                                             <p className="font-bold text-primary">
-                                                R$ {(nft.preco * nft.quantidade).toFixed(2)}
+                                                <span className="flex items-center gap-1 justify-end"><Ticket className="w-3.5 h-3.5" />{Math.floor(nft.preco * nft.quantidade)}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -282,7 +282,7 @@ const Checkout: React.FC = () => {
                                 {appliedCoupon && (
                                     <div className="flex justify-between text-green-400 font-medium text-sm">
                                         <span>Desconto ({appliedCoupon.code})</span>
-                                        <span>- R$ {appliedCoupon.discount.toFixed(2)}</span>
+                                        <span className="flex items-center gap-1">- <Ticket className="w-3.5 h-3.5" />{Math.floor(appliedCoupon.discount)}</span>
                                     </div>
                                 )}
 
@@ -291,13 +291,13 @@ const Checkout: React.FC = () => {
                                 <div className="space-y-1">
                                     <div className="flex justify-between text-sm text-muted-foreground">
                                         <span>Subtotal</span>
-                                        <span>R$ {totalPrice.toFixed(2)}</span>
+                                        <span className="flex items-center gap-1"><Ticket className="w-3.5 h-3.5" />{Math.floor(totalPrice)}</span>
                                     </div>
 
                                     <div className="flex justify-between items-center text-lg font-bold pt-2">
                                         <span>Total</span>
                                         <span className={appliedCoupon ? "text-primary" : "text-gradient"}>
-                                            R$ {finalPrice.toFixed(2)}
+                                            <span className="flex items-center gap-1"><Ticket className="w-4 h-4" />{Math.floor(finalPrice)}</span>
                                         </span>
                                     </div>
                                 </div>
@@ -367,7 +367,7 @@ const Checkout: React.FC = () => {
                             {/* Info */}
                             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
                                 <p className="text-muted-foreground">
-                                    <strong className="text-foreground">Valor:</strong> R$ {finalPrice.toFixed(2)}
+                                    <strong className="text-foreground flex items-center gap-1">Valor: <Ticket className="w-4 h-4 text-green-600 dark:text-green-500" />{Math.floor(finalPrice)}</strong>
                                 </p>
                                 <p className="text-muted-foreground">
                                     <strong className="text-foreground">Validade:</strong> 30 minutos

@@ -184,7 +184,7 @@ const NFTs: React.FC = () => {
                   </p> */}
                   <div className="flex items-center justify-center md:justify-start gap-4">
                     <p className="text-3xl font-bold text-gradient flex items-center gap-2">
-                      <Ticket className="w-8 h-8 text-green-600 dark:text-green-500" /> {currentFeatured.price.toFixed(2).replace(".", ",")}
+                      <Ticket className="w-8 h-8 text-green-600 dark:text-green-500" /> {Math.floor(currentFeatured.price)}
                     </p>
                     <Button onClick={() => handleBuy(currentFeatured)} className="gap-2">
                       <ShoppingCart className="h-4 w-4" />
@@ -273,7 +273,7 @@ const NFTs: React.FC = () => {
                     </p> */}
                     <div className="flex items-center justify-between pt-1">
                       <p className="font-bold text-gradient flex items-center gap-1.5 focus">
-                        <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {nft.price.toFixed(2).replace(".", ",")}
+                        <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {Math.floor(nft.price)}
                       </p>
                       <Button
                         size="sm"

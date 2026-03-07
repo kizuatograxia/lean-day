@@ -208,7 +208,6 @@ const RaffleDetails: React.FC = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isLiveViewActive, setIsLiveViewActive] = useState(false);
   const [activeImage, setActiveImage] = useState<string>("");
-  const [quantity, setQuantity] = useState("1");
 
   const [pendingChangeDialog, setPendingChangeDialog] = useState<{
     open: boolean; emptySlots: number; selectedValue: number; changeValue: number; changeNFTs: NFT[];
@@ -231,6 +230,7 @@ const RaffleDetails: React.FC = () => {
             categoria: data.category || "geral", raridade: "comum", emoji: "🎫",
             image_urls: data.image_urls || [data.image_url],
             winner: data.winner_name ? { name: data.winner_name, picture: data.winner_picture } : undefined,
+            winnersAmount: parseInt(data.winners_amount) || 1,
           };
           setRaffle(mapped);
           setActiveImage(mapped.imagem);
@@ -583,17 +583,10 @@ const RaffleDetails: React.FC = () => {
 
               {/* Quantity */}
               <div className="flex items-center gap-3 mb-5">
-                <span className="text-sm text-muted-foreground">Quantidade:</span>
-                <Select value={quantity} onValueChange={setQuantity}>
-                  <SelectTrigger className="w-auto min-w-[160px] h-9 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 5, 10].map(n => (
-                      <SelectItem key={n} value={String(n)}>{n} unidade{n > 1 ? "s" : ""} ({emptySlots === Infinity ? "disponível" : `${Math.min(n, emptySlots)} disponíveis`})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <span className="text-sm text-muted-foreground">Quantidade de Prêmios:</span>
+                <div className="bg-secondary/50 px-3 py-1.5 rounded-md text-sm font-medium text-foreground border border-border">
+                  {raffle.winnersAmount} {raffle.winnersAmount > 1 ? "prêmios disponíveis" : "prêmio disponível"}
+                </div>
               </div>
 
               {/* CTA Buttons */}
@@ -703,7 +696,7 @@ const RaffleDetails: React.FC = () => {
                             <h4 className="font-semibold text-foreground text-sm truncate">{nft.nome}</h4>
                             <span className="text-sm font-bold text-green-600 dark:text-green-500 flex items-center gap-1">
                               <Ticket className="w-3.5 h-3.5" />
-                              {nft.preco.toFixed(2)}
+                              {Math.floor(nft.preco)}
                             </span>
                           </div>
                           {isSelected && (
@@ -733,7 +726,7 @@ const RaffleDetails: React.FC = () => {
                       <span className="text-muted-foreground">Valor total</span>
                       <span className="font-semibold text-foreground flex items-center gap-1">
                         <Ticket className="w-4 h-4 text-green-600 dark:text-green-500" />
-                        {selectedValue.toFixed(2)}
+                        {Math.floor(selectedValue)}
                       </span>
                     </div>
                     <div className="border-t border-border pt-3 flex justify-between">

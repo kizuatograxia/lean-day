@@ -1,5 +1,5 @@
 import React from "react";
-import { X, ShoppingCart, Sparkles, Trash2 } from "lucide-react";
+import { X, ShoppingCart, Sparkles, Trash2, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/contexts/WalletContext";
 import { useNavigate } from "react-router-dom";
@@ -129,8 +129,8 @@ const WalletDrawer: React.FC<WalletDrawerProps> = ({ isOpen, onClose }) => {
                         <div className="p-4 border-t border-border space-y-3">
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">Total</span>
-                                <span className="text-lg font-bold text-gradient">
-                                    R$ {cartItems.reduce((sum, nft) => sum + nft.preco * nft.quantidade, 0).toFixed(2)}
+                                <span className="text-lg font-bold text-gradient flex items-center justify-center md:justify-start gap-1">
+                                    <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {Math.floor(cartItems.reduce((sum, nft) => sum + nft.preco * nft.quantidade, 0))}
                                 </span>
                             </div>
                             <Button

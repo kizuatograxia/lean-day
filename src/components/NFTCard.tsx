@@ -71,7 +71,7 @@ import { rarityColors, rarityLabels } from "@/utils/rarity"; const NFTCard: Reac
 
                 <div className="flex items-center justify-between pb-1">
                     <p className="text-lg font-bold text-gradient flex items-center gap-1.5 focus">
-                        <Ticket className="w-4 h-4 text-green-600 dark:text-green-500" /> {nft.preco.toFixed(2).replace(".", ",")}
+                        <Ticket className="w-4 h-4 text-green-600 dark:text-green-500" /> {Math.floor(nft.preco)}
                     </p>
                 </div>
 

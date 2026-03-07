@@ -82,7 +82,7 @@ const NFTMobilePreview: React.FC<NFTMobilePreviewProps> = ({ nfts }) => {
                     </p>
                     <div className="flex items-center justify-center md:justify-start gap-4">
                         <p className="text-2xl font-bold text-gradient flex items-center justify-center md:justify-start gap-1">
-                            <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {currentNFT.preco.toFixed(2).replace(".", ",")}
+                            <Ticket className="w-5 h-5 text-green-600 dark:text-green-500" /> {Math.floor(currentNFT.preco)}
                         </p>
                         <Button
                             onClick={handleBuy}
