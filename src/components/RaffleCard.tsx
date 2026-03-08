@@ -102,7 +102,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                                     <Users className="w-3 h-3" />
                                 </div>
                             </div>
-                            <p className="text-primary font-mono text-[10px] uppercase tracking-widest mb-1">Status: Concluded</p>
+                            <p className="text-primary font-mono text-[10px] uppercase tracking-widest mb-1">Status: Concluído</p>
                             <p className="text-foreground font-bold text-sm truncate w-full max-w-[150px]">{raffle.winner.name}</p>
                         </div>
                     )}
@@ -124,7 +124,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                         {alreadyParticipating && (
                             <div className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 font-bold">
                                 <Shield className="w-3 h-3" />
-                                <span>Active</span>
+                                <span>Ativo</span>
                             </div>
                         )}
                     </div>
@@ -135,7 +135,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
 
                     <div className="mt-auto pt-2 border-t border-border/30">
                         <div className="flex justify-between items-end mb-2">
-                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Filled</span>
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Preenchido</span>
                             <span className="text-xs font-mono font-bold text-foreground">
                                 {progressPercent.toFixed(1)}%
                             </span>
@@ -154,7 +154,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                         </div>
 
                         <div className="flex justify-between items-center text-[10px] mt-2 text-muted-foreground font-mono">
-                            <span>{raffle.participantes} alloc</span>
+                            <span>{raffle.participantes} aloc</span>
                             <span>{raffle.maxParticipantes} total</span>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                                     className="w-full text-xs font-mono tracking-wider h-10 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary rounded"
                                     onClick={handleMoreInfo}
                                 >
-                                    View Allocation
+                                    Ver Alocação
                                 </Button>
                             ) : (
                                 <Button
@@ -175,7 +175,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle, index, disableNavigatio
                                     disabled={totalNFTs < raffle.custoNFT}
                                     onClick={(e) => { e.stopPropagation(); handleParticipate(e); }}
                                 >
-                                    {totalNFTs < raffle.custoNFT ? 'Insufficient NFTs' : 'Mint Allocation'}
+                                    {totalNFTs < raffle.custoNFT ? 'NFTs Insuficientes' : 'Mintar Alocação'}
                                 </Button>
                             )}
                         </div>

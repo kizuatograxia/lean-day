@@ -58,7 +58,7 @@ const LuxuryShowcase: React.FC = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            <span className="text-[10px] font-mono tracking-[0.2em] font-semibold uppercase text-muted-foreground">Live Drop</span>
+            <span className="text-[10px] font-mono tracking-[0.2em] font-semibold uppercase text-muted-foreground">Drop Ao Vivo</span>
           </div>
           <span className="text-[12px] font-mono text-foreground font-medium">#{activeIndex + 1} / {featured.length}</span>
         </div>
@@ -109,7 +109,7 @@ const LuxuryShowcase: React.FC = () => {
                 {/* Technical Progress */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-end">
-                    <span className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">Allocation</span>
+                    <span className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">Alocação</span>
                     <span className="text-xs font-mono text-foreground">{progress}%</span>
                   </div>
                   <div className="h-1 bg-secondary overflow-hidden">
@@ -167,7 +167,7 @@ const Hero: React.FC = () => {
             >
               <div className="px-3 py-1 bg-secondary border border-border/50 text-[10px] font-mono tracking-widest uppercase text-muted-foreground inline-flex items-center">
                 <Shield className="w-3 h-3 mr-2 opacity-70" />
-                Audited Protocol
+                Auditoria Concluída
               </div>
               <div className="flex -space-x-2">
                 {[1, 2, 3].map((i) => (
@@ -187,9 +187,9 @@ const Hero: React.FC = () => {
               transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight text-foreground mb-6"
             >
-              Digital assets.<br />
+              Ativos digitais.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary to-foreground bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
-                Tangible returns.
+                Retornos reais.
               </span>
             </motion.h1>
 
@@ -199,7 +199,7 @@ const Hero: React.FC = () => {
               transition={{ delay: 0.4, duration: 1 }}
               className="text-base md:text-lg text-muted-foreground mb-10 max-w-lg leading-relaxed font-light"
             >
-              A high-yield digital collection platform. Acquire verified NFT tickets for exclusive access to premium asset allocations. Fully transparent, zero friction.
+              Uma plataforma premium de colecionáveis digitais. Adquira NFTs verificados para acesso exclusivo a alocações de alto valor. Totalmente transparente.
             </motion.p>
 
             <motion.div
@@ -213,7 +213,7 @@ const Hero: React.FC = () => {
                 className="h-14 px-8 font-bold tracking-wide rounded-none border border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary transition-all shadow-glow uppercase text-xs"
                 onClick={() => document.getElementById('sorteios')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Access Allocations
+                Acessar Alocações
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button
@@ -222,7 +222,7 @@ const Hero: React.FC = () => {
                 className="h-14 px-8 font-semibold tracking-wide rounded-none border-border/50 bg-background/50 backdrop-blur hover:bg-secondary transition-all uppercase text-xs"
                 onClick={() => document.getElementById('nfts')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                View Collection
+                Ver Coleção
               </Button>
             </motion.div>
 
@@ -234,9 +234,9 @@ const Hero: React.FC = () => {
               className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8 py-6 border-t border-border/30 w-full max-w-lg"
             >
               {[
-                { label: "Total Volume", value: "R$ 2.4M+" },
-                { label: "Active Pools", value: "12" },
-                { label: "Success Rate", value: "100%" },
+                { label: "Volume Total", value: "R$ 2.4M+" },
+                { label: "Sorteios Ativos", value: "12" },
+                { label: "Taxa de Sucesso", value: "100%" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col gap-1">
                   <span className="text-[10px] font-mono text-muted-foreground uppercase">{stat.label}</span>
@@ -259,7 +259,7 @@ const Hero: React.FC = () => {
             >
               <div className="w-[1px] h-32 bg-border/50" />
               <div className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground rotate-90 my-8">
-                Scroll to discover
+                Deslize para descobrir
               </div>
               <div className="w-[1px] h-16 bg-gradient-to-b from-border/50 to-transparent" />
             </motion.div>
