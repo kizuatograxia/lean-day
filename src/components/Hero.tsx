@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ArrowRight, Zap, Shield, Users, Ticket } from "lucide-react";
+import { ArrowRight, Zap, Shield, Users, Ticket, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { raffles as localRaffles } from "@/data/raffles";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,8 +8,14 @@ import MempoolBackground from "@/components/MempoolBackground";
 import { api } from "@/lib/api";
 import { Raffle } from "@/types/raffle";
 
-// Rotating Raffle showcase (mini vitrine)
-const RaffleShowcase: React.FC = () => {
+const DecorativeGrid = () => (
+  <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-[0]"
+    style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }}>
+  </div>
+);
+
+// High-impact, minimal showcase
+const LuxuryShowcase: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [raffles, setRaffles] = useState<Raffle[]>(localRaffles);
 
@@ -22,13 +28,13 @@ const RaffleShowcase: React.FC = () => {
       .catch(() => { });
   }, []);
 
-  const featured = useMemo(() => raffles.slice(0, 6), [raffles]);
+  const featured = useMemo(() => raffles.slice(0, 4), [raffles]); // Max 4 for focus
 
   useEffect(() => {
     if (featured.length === 0) return;
     const timer = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % featured.length);
-    }, 4000);
+    }, 5000);
     return () => clearInterval(timer);
   }, [featured.length]);
 
@@ -40,95 +46,88 @@ const RaffleShowcase: React.FC = () => {
     : 0;
 
   return (
-    <div className="relative w-full">
-      <div className="relative bg-card/80 backdrop-blur-xl border border-border/60 rounded-xl overflow-hidden shadow-lg">
-        {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/30">
+    <div className="relative w-full max-w-md mx-auto xl:mr-0 group">
+      {/* Structural Backdrop */}
+      <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-transparent rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+
+      <div className="relative bg-card border border-border/80 rounded-2xl overflow-hidden shadow-card">
+        {/* Minimalist Top Bar */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/50 bg-background/50 backdrop-blur-md z-20 relative">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-wider">Sorteios em destaque</span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-[10px] font-mono tracking-[0.2em] font-semibold uppercase text-muted-foreground">Live Drop</span>
           </div>
-          <span className="text-[11px] font-mono text-primary font-bold">{featured.length} ativos</span>
+          <span className="text-[12px] font-mono text-foreground font-medium">#{activeIndex + 1} / {featured.length}</span>
         </div>
 
-        {/* Raffle Image */}
-        <Link to={`/raffle/${current.id}`}>
-          <div className="relative aspect-square bg-gradient-to-br from-muted/20 to-transparent flex items-center justify-center overflow-hidden cursor-pointer group">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.id}
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full h-full flex items-center justify-center"
-              >
-                <img
-                  src={current.imagem}
-                  alt={current.titulo}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Prize value overlay */}
-            <div className="absolute bottom-3 left-3 z-10">
-              <p className="text-2xl font-black text-primary drop-shadow-lg">
-                R$ {current.premioValor.toLocaleString("pt-BR")}
-              </p>
-            </div>
-          </div>
-        </Link>
-
-        {/* Raffle Info */}
-        <div className="p-4 border-t border-border/40">
-          <AnimatePresence mode="wait">
+        {/* Hero Image Area */}
+        <Link to={`/raffle/${current.id}`} className="block relative aspect-[4/5] overflow-hidden bg-background">
+          <AnimatePresence mode="popLayout">
             <motion.div
-              key={current.id + "-info"}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.3 }}
+              key={current.id}
+              initial={{ filter: 'grayscale(100%) blur(10px)', opacity: 0, scale: 1.05 }}
+              animate={{ filter: 'grayscale(0%) blur(0px)', opacity: 1, scale: 1 }}
+              exit={{ filter: 'grayscale(50%) blur(5px)', opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full h-full"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/20 text-primary">
-                  {current.categoria}
-                </span>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Ticket className="h-3 w-3" />
-                  <span>R$ {current.custoNFT}</span>
-                </div>
-              </div>
-              <h3 className="font-bold text-foreground text-sm mb-2 truncate">{current.titulo}</h3>
-
-              {/* Progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>{current.participantes} cotas</span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${Math.max(progress, 2)}%` }}
-                  />
-                </div>
-              </div>
+              <img
+                src={current.imagem}
+                alt={current.titulo}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-90" />
             </motion.div>
           </AnimatePresence>
-        </div>
 
-        {/* Dots (Position Indicator) */}
-        <div className="flex gap-1 px-4 pb-4 mt-2">
-          {featured.map((r, i) => (
-            <button
-              key={r.id}
-              onClick={() => setActiveIndex(i)}
-              className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'bg-foreground' : 'bg-border/50 hover:bg-muted-foreground/30'}`}
-            />
-          ))}
-        </div>
+          {/* Heavy Typography Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 z-10 flex flex-col justify-end">
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={current.id + "-content"}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background/80 backdrop-blur-sm border border-border/50 mb-4">
+                  <Ticket className="h-3 w-3 text-primary" />
+                  <span className="text-[11px] font-bold text-foreground">R$ {current.custoNFT} <span className="text-muted-foreground font-normal">/ quota</span></span>
+                </div>
+
+                <h3 className="font-extrabold text-2xl md:text-3xl text-foreground leading-[1.1] tracking-tight mb-2 line-clamp-2">
+                  {current.titulo}
+                </h3>
+
+                <p className="font-mono text-xl text-primary mb-6">
+                  R$ {current.premioValor.toLocaleString("pt-BR")}
+                </p>
+
+                {/* Technical Progress */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <span className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">Allocation</span>
+                    <span className="text-xs font-mono text-foreground">{progress}%</span>
+                  </div>
+                  <div className="h-1 bg-secondary overflow-hidden">
+                    <motion.div
+                      layoutId="progress"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.max(progress, 2)}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-primary shadow-glow relative"
+                    >
+                      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/30" />
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </Link>
       </div>
     </div>
   );
@@ -146,109 +145,126 @@ const Hero: React.FC = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-background border-b border-border">
+    <section ref={sectionRef} className="relative overflow-hidden bg-background min-h-[90vh] flex items-center border-b border-border/30 pt-16 lg:pt-0">
+      {/* Background execution */}
       <MempoolBackground containerRef={sectionRef as React.RefObject<HTMLElement>} />
+      <DecorativeGrid />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60 pointer-events-none z-[1]" />
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-[1]" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/[0.06] dark:bg-primary/[0.1] rounded-full blur-[150px] pointer-events-none z-[1]" />
+      {/* Lighting / Atmosphere */}
+      <div className="absolute top-0 right-1/4 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-primary/[0.03] dark:bg-primary/[0.04] rounded-full blur-[120px] pointer-events-none z-[1] mix-blend-screen" />
+      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none z-[1]" />
 
-      <div className="container mx-auto px-4 relative z-10 py-12 md:py-20 lg:py-24">
-        <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+      <div className="container mx-auto px-4 md:px-6 relative z-10 py-16 lg:py-0">
+        <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-8 items-center">
 
-          {/* Left: Content */}
-          <div className="flex-1 w-full max-w-2xl text-center lg:text-left">
+          {/* Left: Editorial Copy */}
+          <div className="flex flex-col items-start w-full relative">
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 bg-card/70 backdrop-blur-md border border-border/50 rounded-full px-3 py-1.5 mb-6"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.8, ease: "easeOut" }}
+              className="flex items-center gap-3 mb-8"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              <span className="text-xs font-semibold text-muted-foreground">
-                <span className="text-foreground font-mono">{ticketCount.toLocaleString('pt-BR')}</span> bilhetes emitidos
-              </span>
+              <div className="px-3 py-1 bg-secondary border border-border/50 text-[10px] font-mono tracking-widest uppercase text-muted-foreground inline-flex items-center">
+                <Shield className="w-3 h-3 mr-2 opacity-70" />
+                Audited Protocol
+              </div>
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+                <div className="w-6 h-6 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[8px] font-bold text-primary-foreground z-10">
+                  +{ticketCount.toString().substring(0, 2)}k
+                </div>
+              </div>
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-black leading-[1.08] tracking-tight text-foreground mb-5"
+              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight text-foreground mb-6"
             >
-              Colecione NFTs.{" "}
-              <span className="text-primary">Ganhe prêmios.</span>
+              Digital assets.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary to-foreground bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
+                Tangible returns.
+              </span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.6 }}
-              className="text-base md:text-lg text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 1 }}
+              className="text-base md:text-lg text-muted-foreground mb-10 max-w-lg leading-relaxed font-light"
             >
-              Cada NFT é um bilhete verificável na blockchain. Quanto mais você coleciona, maiores suas chances em sorteios auditados e transparentes.
+              A high-yield digital collection platform. Acquire verified NFT tickets for exclusive access to premium asset allocations. Fully transparent, zero friction.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="flex flex-col sm:flex-row items-center lg:items-start gap-3 mb-10"
+              transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+              className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
               <Button
                 size="xl"
-                className="w-full sm:w-auto font-bold shadow-sm"
+                className="h-14 px-8 font-bold tracking-wide rounded-none border border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary transition-all shadow-glow uppercase text-xs"
                 onClick={() => document.getElementById('sorteios')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Explorar Sorteios
-                <ArrowRight className="h-4 w-4 ml-1.5" />
+                Access Allocations
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button
                 variant="outline"
                 size="xl"
-                className="w-full sm:w-auto font-semibold backdrop-blur-sm bg-card/50"
+                className="h-14 px-8 font-semibold tracking-wide rounded-none border-border/50 bg-background/50 backdrop-blur hover:bg-secondary transition-all uppercase text-xs"
                 onClick={() => document.getElementById('nfts')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Ver NFTs
+                View Collection
               </Button>
             </motion.div>
 
+            {/* Minimalist Stats */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="flex items-center justify-center lg:justify-start gap-6 md:gap-8"
+              transition={{ delay: 0.8, duration: 1 }}
+              className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8 py-6 border-t border-border/30 w-full max-w-lg"
             >
               {[
-                { icon: Shield, label: "Blockchain", value: "Verificado" },
-                { icon: Users, label: "Participantes", value: "2.4k+" },
-                { icon: Zap, label: "Sorteios", value: "Ao Vivo" },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm">
-                    <Icon className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground leading-tight">{value}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{label}</span>
-                  </div>
+                { label: "Total Volume", value: "R$ 2.4M+" },
+                { label: "Active Pools", value: "12" },
+                { label: "Success Rate", value: "100%" },
+              ].map((stat, i) => (
+                <div key={i} className="flex flex-col gap-1">
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">{stat.label}</span>
+                  <span className="text-xl font-bold text-foreground">{stat.value}</span>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          {/* Right: Raffle Showcase */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.7 }}
-            className="flex-shrink-0 w-full max-w-[340px] lg:max-w-[380px]"
-          >
-            <RaffleShowcase />
-          </motion.div>
+          {/* Right: Structural Showcase */}
+          <div className="relative w-full h-full flex items-center justify-center lg:justify-end mt-12 lg:mt-0">
+            <LuxuryShowcase />
+
+            {/* Decorative structural elements to break the grid */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6, duration: 1 }}
+              className="absolute -right-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-2 items-center"
+            >
+              <div className="w-[1px] h-32 bg-border/50" />
+              <div className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground rotate-90 my-8">
+                Scroll to discover
+              </div>
+              <div className="w-[1px] h-16 bg-gradient-to-b from-border/50 to-transparent" />
+            </motion.div>
+          </div>
+
         </div>
       </div>
     </section>
