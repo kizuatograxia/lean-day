@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 
@@ -9,7 +9,7 @@ interface CategoryNavProps {
     onCategoryChange: (category: string) => void;
 }
 
-const CategoryNav: React.FC<CategoryNavProps> = ({ activeCategory, onCategoryChange }) => {
+const CategoryNav: FC<CategoryNavProps> = ({ activeCategory, onCategoryChange }) => {
     const [categories, setCategories] = useState<any[]>([]);
 
     useEffect(() => {

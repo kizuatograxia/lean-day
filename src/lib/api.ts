@@ -1,11 +1,15 @@
+import { storage } from "./storage";
+
 export const API_URL = import.meta.env.VITE_API_URL || "/api";
-console.log("API URL configured as:", API_URL);
+if (import.meta.env.DEV) {
+    console.log("API URL configured as:", API_URL);
+}
 
 /**
  * Centralized request wrapper to handle headers, authentication, and errors.
  */
 async function request(path: string, options: RequestInit = {}) {
-    const token = localStorage.getItem('auth_token');
+    const token = storage.getToken();
 
     const headers = {
         "Content-Type": "application/json",
@@ -269,7 +273,7 @@ export const api = {
     },
 
     updateTracking: async (raffleId: string, trackingData: { trackingCode: string, carrier: string, status?: string }) => {
-        const password = localStorage.getItem('admin_key');
+        const password = storage.getAdminKey();
         return request(`/admin/raffles/${raffleId}/tracking`, {
             method: "PUT",
             body: JSON.stringify({ ...trackingData, password }),
@@ -359,7 +363,6 @@ export const api = {
 
         // Here you would validate against a blacklist or database
         // For now, we trust the client-side validation which handles format/age
-        console.log("Gate verified for:", { cpf, birthDate });
 
         return { success: true };
     },
@@ -380,14 +383,14 @@ export const api = {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 800));
 
-            const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+            const storedReviews = storage.getReviews();
             const newReview = {
                 ...testimonial,
                 id: String(Date.now()),
                 createdAt: new Date().toISOString(),
-                status: 'pending' // Still pending local
+                status: 'pending'
             };
-            localStorage.setItem("admin_reviews", JSON.stringify([...storedReviews, newReview]));
+            storage.setReviews([...storedReviews, newReview]);
             return { success: true, local: true };
         }
     },
@@ -400,7 +403,7 @@ export const api = {
             console.warn("Failed to fetch pending reviews, falling back to local", e);
         }
 
-        const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+        const storedReviews = storage.getReviews();
         return storedReviews.filter((r: any) => r.status === 'pending');
     },
 
@@ -412,7 +415,7 @@ export const api = {
             console.warn("Failed to fetch global winners, falling back to local", e);
         }
 
-        const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+        const storedReviews = storage.getReviews();
         return storedReviews.filter((r: any) => r.status === 'approved');
     },
 
@@ -428,11 +431,11 @@ export const api = {
 
         // Fallback local update
         await new Promise(resolve => setTimeout(resolve, 500));
-        const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+        const storedReviews = storage.getReviews();
         const updatedReviews = storedReviews.map((r: any) =>
             r.id === id ? { ...r, status: 'approved' } : r
         );
-        localStorage.setItem("admin_reviews", JSON.stringify(updatedReviews));
+        storage.setReviews(updatedReviews);
         return { success: true };
     },
 
@@ -447,9 +450,9 @@ export const api = {
         }
 
         await new Promise(resolve => setTimeout(resolve, 500));
-        const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+        const storedReviews = storage.getReviews();
         const updatedReviews = storedReviews.filter((r: any) => r.id !== id);
-        localStorage.setItem("admin_reviews", JSON.stringify(updatedReviews));
+        storage.setReviews(updatedReviews);
         return { success: true };
     },
 
@@ -464,9 +467,9 @@ export const api = {
         }
 
         await new Promise(resolve => setTimeout(resolve, 500));
-        const storedReviews = JSON.parse(localStorage.getItem("admin_reviews") || "[]");
+        const storedReviews = storage.getReviews();
         const updatedReviews = storedReviews.filter((r: any) => r.id !== id);
-        localStorage.setItem("admin_reviews", JSON.stringify(updatedReviews));
+        storage.setReviews(updatedReviews);
         return { success: true };
     },
 };
