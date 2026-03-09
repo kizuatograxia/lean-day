@@ -478,7 +478,7 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
               <motion.div
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
-                className="bg-black/90 backdrop-blur-xl rounded-full flex flex-col items-center justify-center gap-3 border-2 border-yellow-500/60 shadow-[0_0_50px_rgba(234,179,8,0.4)] overflow-hidden"
+                className="glass-card rounded-full flex flex-col items-center justify-center gap-3 border-2 border-yellow-500/60 shadow-elevated overflow-hidden"
                 style={{ width: "45%", aspectRatio: "1", padding: winner ? "0" : "1.5rem" }}
               >
                 {winner ? (
@@ -502,9 +502,9 @@ export const TicketVisualizer: React.FC<TicketVisualizerProps> = ({
 
         {/* Live indicator */}
         {!isDrawing && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10 z-20">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Live</span>
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 glass-card px-2 py-1 rounded-full z-20">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">Live</span>
           </div>
         )}
       </div>

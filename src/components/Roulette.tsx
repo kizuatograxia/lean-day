@@ -151,17 +151,17 @@ const Roulette: React.FC<RouletteProps> = ({ candidates, winnerId, onSpinStart, 
     const winner = participants.find(p => p.id === winnerId);
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center glass-overlay animate-in fade-in duration-300">
             <div className="relative flex flex-col items-center justify-center">
                 {/* Close (Only if showing winner or error) */}
                 {showWinner && (
-                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/10 rounded-full p-2 hover:bg-white/20">
-                        <X className="text-white w-6 h-6" />
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-foreground/10 rounded-full p-2 hover:bg-foreground/20">
+                        <X className="text-foreground w-6 h-6" />
                     </button>
                 )}
 
                 {!winnerId && (
-                    <div className="absolute top-[-100px] text-white text-2xl font-bold animate-pulse">
+                    <div className="absolute top-[-100px] text-foreground text-2xl font-bold animate-pulse">
                         Aguardando confirmação do sorteio...
                     </div>
                 )}
@@ -172,10 +172,10 @@ const Roulette: React.FC<RouletteProps> = ({ candidates, winnerId, onSpinStart, 
                     style={{ transform: `scale(${zoomLevel})` }}
                 >
                     {/* Arrow Pointer (Fixed on the right side pointing left) */}
-                    <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[15px] border-t-transparent border-r-[30px] border-r-white border-b-[15px] border-b-transparent z-10 drop-shadow-lg" />
+                    <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[15px] border-t-transparent border-r-[30px] border-r-foreground border-b-[15px] border-b-transparent z-10 drop-shadow-lg" />
 
                     <div
-                        className="rounded-full shadow-2xl border-4 border-white/20 overflow-hidden"
+                        className="rounded-full shadow-2xl border-4 border-border/50 overflow-hidden"
                         style={{
                             transform: `rotate(${rotation}deg)`,
                             transition: isSpinning ? 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none'

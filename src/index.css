@@ -67,6 +67,11 @@
     --sidebar-accent-foreground: 230 25% 10%;
     --sidebar-border: 220 15% 90%;
     --sidebar-ring: 155 85% 45%;
+
+    /* Glassmorphism Tokens - Light */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 220 15% 90% / 0.5;
+    --glass-overlay: 220 15% 95% / 0.4;
   }
 
   .dark {
@@ -131,6 +136,11 @@
     --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
     /* deep shadow for floating effect */
     --shadow-elevated: 0 20px 50px -10px rgba(0, 0, 0, 0.8);
+
+    /* Glassmorphism Tokens - Dark */
+    --glass-bg: 230 25% 9% / 0.7;
+    --glass-border: 230 25% 14% / 0.5;
+    --glass-overlay: 0 0% 0% / 0.6;
   }
 }
 
@@ -177,6 +187,19 @@
 
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
+  }
+
+  .glass-card {
+    background-color: hsla(var(--glass-bg));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--glass-border));
+  }
+
+  .glass-overlay {
+    background-color: hsla(var(--glass-overlay));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   /* Animations for Roulette */

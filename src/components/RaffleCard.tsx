@@ -75,7 +75,7 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
                 */}
 
                 {/* Prize Value Badge */}
-                <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 bg-background/80 backdrop-blur-sm text-foreground px-1.5 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold border border-border">
+                <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 glass-card px-1.5 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold">
                     R$ {raffle.premioValor.toLocaleString("pt-BR")}
                 </div>
 
@@ -94,20 +94,20 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
 
                     {/* Winner Overlay */}
                     {raffle.status === 'encerrado' && raffle.winner && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-4 animate-in fade-in zoom-in duration-300">
+                        <div className="absolute inset-0 glass-overlay flex flex-col items-center justify-center text-center p-4 animate-in fade-in zoom-in duration-300">
                             <div className="relative mb-2">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur opacity-75 animate-pulse"></div>
                                 <img
                                     src={raffle.winner.picture}
                                     alt={raffle.winner.name}
-                                    className="relative w-16 h-16 rounded-full border-2 border-white object-cover shadow-lg"
+                                    className="relative w-16 h-16 rounded-full border-2 border-white/50 object-cover shadow-lg"
                                 />
                                 <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-black p-1 rounded-full border border-white">
                                     <Users className="w-3 h-3" />
                                 </div>
                             </div>
-                            <p className="text-yellow-400 font-bold text-xs uppercase tracking-wider mb-0.5">Vencedor</p>
-                            <p className="text-white font-bold text-lg leading-tight">{raffle.winner.name}</p>
+                            <p className="text-yellow-500 font-bold text-xs uppercase tracking-wider mb-0.5">Vencedor</p>
+                            <p className="text-foreground font-bold text-lg leading-tight">{raffle.winner.name}</p>
                         </div>
                     )}
                 </div>
@@ -131,7 +131,7 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
             <div className="hidden md:block absolute top-[calc(100%-1rem)] left-0 w-full pt-5 opacity-0 -translate-y-4 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-40">
                 <div className="space-y-3 px-1">
                     {/* Progress Bar (Desktop) */}
-                    <div className="space-y-1 bg-background/80 backdrop-blur-md p-2 rounded-lg border border-border shadow-sm">
+                    <div className="space-y-1 glass-card p-2 rounded-lg shadow-sm">
                         <div className="flex justify-between text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                                 <Ticket className="h-3 w-3" />

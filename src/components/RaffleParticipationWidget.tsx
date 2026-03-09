@@ -38,10 +38,10 @@ export const RaffleParticipationWidget = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="mb-4 w-80 max-h-[70vh] overflow-hidden rounded-2xl border border-border/50 bg-black/80 backdrop-blur-xl shadow-2xl shadow-black/50"
+                        className="mb-4 w-80 max-h-[70vh] overflow-hidden rounded-2xl glass-card shadow-elevated"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-white/5">
+                        <div className="flex items-center justify-between p-4 border-b border-border/10">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded-lg bg-primary/10 ring-1 ring-primary/20">
                                     <Ticket className="w-4 h-4 text-primary" />
@@ -52,7 +52,7 @@ export const RaffleParticipationWidget = () => {
                             </div>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded-full hover:bg-foreground/10 transition-colors"
                             >
                                 <X className="w-4 h-4 text-muted-foreground" />
                             </button>
@@ -67,11 +67,11 @@ export const RaffleParticipationWidget = () => {
                                     onClick={() => setIsOpen(false)}
                                 >
                                     <motion.div
-                                        whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.03)" }}
-                                        className="flex items-center gap-3 p-3 rounded-xl border border-white/5 transition-colors cursor-pointer group"
+                                        whileHover={{ scale: 1.02, backgroundColor: "hsla(var(--foreground) / 0.03)" }}
+                                        className="flex items-center gap-3 p-3 rounded-xl border border-border/10 transition-colors cursor-pointer group"
                                     >
                                         {/* Thumbnail */}
-                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-primary/30 transition-colors">
+                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-border/20 group-hover:border-primary/30 transition-colors">
                                             <img
                                                 src={ur.raffle.imagem || "https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=100"}
                                                 alt={ur.raffle.titulo}
@@ -87,7 +87,7 @@ export const RaffleParticipationWidget = () => {
                                             <div className="flex items-center gap-2 mt-1">
                                                 <CountdownBadge
                                                     targetDate={ur.raffle.dataFim}
-                                                    className="text-[10px] px-1.5 py-0.5 bg-secondary/50 text-white"
+                                                    className="text-[10px] px-1.5 py-0.5 bg-secondary text-foreground"
                                                 />
                                             </div>
                                         </div>
@@ -97,7 +97,7 @@ export const RaffleParticipationWidget = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-3 border-t border-white/5 bg-white/5">
+                        <div className="p-3 border-t border-border/10 bg-muted/30">
                             <Link
                                 to="/profile"
                                 onClick={() => setIsOpen(false)}
@@ -120,7 +120,7 @@ export const RaffleParticipationWidget = () => {
                     border
                     ${isOpen
                         ? 'bg-background border-border text-foreground'
-                        : 'bg-black/60 backdrop-blur-md border-white/10 text-white hover:border-primary/50 hover:bg-black/80'
+                        : 'glass-card text-foreground hover:border-primary/50'
                     }
                     ${hasUrgent && !isOpen ? 'ring-2 ring-destructive/50 animate-pulse' : ''}
                 `}
