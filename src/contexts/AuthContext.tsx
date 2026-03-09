@@ -129,13 +129,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     storage.setToken(response.token);
                 }
 
-                toast.success("Login com Google realizado!");
                 return { success: true };
             }
             return { success: false, error: "Invalid response" };
         } catch (error: any) {
             console.error("Google Login failed:", error);
-            toast.error(error.message || "Falha lo login com Google");
             return { success: false, error: error.message };
         } finally {
             setIsLoading(false);
@@ -161,7 +159,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     storage.setToken(response.token);
                 }
 
-                toast.success("Conta criada com sucesso!");
                 return { success: true };
             }
             return { success: false, error: "Invalid response" };

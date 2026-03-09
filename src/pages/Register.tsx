@@ -239,8 +239,9 @@ const Register: React.FC = () => {
                             console.warn("Profile save failed, continuing:", profileErr);
                         }
                     }
-                    toast.success("Conta criada com sucesso! 🎉");
-                    navigate("/");
+                    toast.success("Conta criada com sucesso!");
+                    setIsGoogleAuth(false);
+                    setStep(-1);
                 } else {
                     toast.error(result.error || "Erro ao criar conta");
                 }
@@ -257,12 +258,12 @@ const Register: React.FC = () => {
         if (!loginEmail || !loginPassword) { toast.error("Preencha email e senha"); return; }
         setIsSubmitting(true);
         try {
-            const result = await login(loginEmail, loginPassword);
-            if (result.success) {
-                toast.success("Login realizado com sucesso!");
+            const response = await login(loginEmail, loginPassword);
+            if (response.success) {
+                toast.success("Bem-vindo de volta!");
                 navigate("/");
             } else {
-                toast.error(result.error || "Email ou senha incorretos");
+                toast.error(response.error || "Falha ao entrar");
             }
         } catch {
             toast.error("Erro ao fazer login");
@@ -272,6 +273,8 @@ const Register: React.FC = () => {
     };
 
     const handleGoogleSuccess = async (cred: any) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             const r = await googleLogin(cred.credential!);
             if (r.success) {
@@ -289,7 +292,11 @@ const Register: React.FC = () => {
                     }
                 }
             }
-        } catch { toast.error("Falha no login com Google"); }
+        } catch {
+            toast.error("Falha no login com Google");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     useEffect(() => {
