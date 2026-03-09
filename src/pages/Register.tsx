@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Mail, Lock, Eye, EyeOff, User, Phone, MapPin, Calendar,
     CreditCard, ChevronRight, ChevronLeft, Check, Gift, Loader2,
@@ -16,31 +18,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLogin } from "@react-oauth/google";
 import { api } from "@/lib/api";
 import { CPFGate } from "@/components/gate/CPFGate";
+import { registerSchema, RegisterFormData } from "@/lib/schemas";
+import { storage } from "@/lib/storage";
 import mascotZe from "@/assets/mascot-ze.png";
 
-// ─── Types ──────────────────────────────────────────────
-interface FormData {
-    email: string;
-    confirmEmail: string;
-    birthDate: string;
-    cpf: string;
-    gender: string;
-    address: string;
-    number: string;
-    district: string;
-    city: string;
-    state: string;
-    cep: string;
-    country: string;
-    phone: string;
-    username: string;
-    password: string;
-    promoCode: string;
-    acceptTerms: boolean;
-    acceptBonus: boolean;
-}
-
-const INITIAL_FORM: FormData = {
+const INITIAL_FORM: RegisterFormData = {
     email: "", confirmEmail: "", birthDate: "", cpf: "", gender: "",
     address: "", number: "", district: "", city: "", state: "", cep: "", country: "brasil", phone: "",
     username: "", password: "", promoCode: "", acceptTerms: false, acceptBonus: true,
@@ -90,7 +72,8 @@ const Stepper: React.FC<{ current: number }> = ({ current }) => (
 const Field: React.FC<{
     icon: React.ReactNode; label: string; id: string; placeholder: string;
     value: string; onChange: (v: string) => void; type?: string; rightIcon?: React.ReactNode;
-}> = ({ icon, label, id, placeholder, value, onChange, type = "text", rightIcon }) => (
+    error?: string;
+}> = ({ icon, label, id, placeholder, value, onChange, type = "text", rightIcon, error }) => (
     <div className="space-y-1.5">
         <Label htmlFor={id} className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">{label}</Label>
         <div className="relative">
@@ -98,10 +81,11 @@ const Field: React.FC<{
             <input
                 id={id} type={type} placeholder={placeholder} value={value}
                 onChange={e => onChange(e.target.value)}
-                className="w-full h-12 pl-11 pr-4 rounded-xl border border-input bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-medium"
+                className={`w-full h-12 pl-11 pr-4 rounded-xl border ${error ? 'border-destructive' : 'border-input'} bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-medium`}
             />
             {rightIcon && <span className="absolute right-3 top-1/2 -translate-y-1/2">{rightIcon}</span>}
         </div>
+        {error && <p className="text-[10px] text-destructive font-medium pl-1">{error}</p>}
     </div>
 );
 
@@ -115,11 +99,24 @@ const Register: React.FC = () => {
     const initialView = resetToken ? 'reset-password' : (location.pathname.includes('login') ? 'login' : 'register');
     const { register: registerUser, login, googleLogin, user, updateUser } = useAuth();
     const [view, setView] = useState<'register' | 'login' | 'forgot-password' | 'reset-password'>(initialView);
-    const [step, setStep] = useState<-1 | 0 | 1 | 2>(-1); // -1 = social/email choice
-    const [form, setForm] = useState<FormData>(INITIAL_FORM);
+    const [step, setStep] = useState<-1 | 0 | 1 | 2>(-1);
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGoogleAuth, setIsGoogleAuth] = useState(false);
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        getValues,
+        trigger,
+        watch,
+        formState: { errors },
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: INITIAL_FORM,
+        mode: "onBlur"
+    });
 
     // Password Recovery State
     const [recoveryEmail, setRecoveryEmail] = useState("");
@@ -165,26 +162,19 @@ const Register: React.FC = () => {
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
-    const set = useCallback((field: keyof FormData, value: string | boolean) => {
-        setForm(prev => ({ ...prev, [field]: value }));
-    }, []);
 
     const handleBlurCep = async () => {
-        const rawCep = form.cep.replace(/\D/g, '');
+        const rawCep = getValues("cep").replace(/\D/g, '');
         if (rawCep.length === 8) {
             setCepLoading(true);
             try {
                 const response = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`);
                 const data = await response.json();
                 if (!data.erro) {
-                    setForm(prev => ({
-                        ...prev,
-                        address: data.logradouro,
-                        district: data.bairro,
-                        city: data.localidade,
-                        state: data.uf,
-                    }));
-                    // Focus number field if possible
+                    setValue("address", data.logradouro);
+                    setValue("district", data.bairro);
+                    setValue("city", data.localidade);
+                    setValue("state", data.uf);
                     document.getElementById('number')?.focus();
                 } else {
                     toast.error("CEP não encontrado");
@@ -197,117 +187,53 @@ const Register: React.FC = () => {
         }
     };
 
-    // Validation per step
-    const validateStep = (s: number): boolean => {
+    const validateStep = async (s: number): Promise<boolean> => {
         if (s === 0) {
-            if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { toast.error("Email inválido"); return false; }
-            if (form.email !== form.confirmEmail) { toast.error("Emails não coincidem"); return false; }
-            if (!form.birthDate || form.birthDate.length < 10) { toast.error("Data de nascimento inválida"); return false; }
-            if (!form.cpf || form.cpf.replace(/\D/g, "").length < 11) { toast.error("CPF inválido"); return false; }
-            // Check 18+
-            const parts = form.birthDate.split("/");
-            if (parts.length === 3) {
-                const birth = new Date(+parts[2], +parts[1] - 1, +parts[0]);
-                const age = (Date.now() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
-                if (age < 18) { toast.error("Você precisa ter 18+ anos"); return false; }
-            }
-            return true;
+            return await trigger(["email", "confirmEmail", "birthDate", "cpf", "gender"]);
         }
         if (s === 1) {
-            if (!form.cep || form.cep.replace(/\D/g, "").length < 8) { toast.error("CEP inválido"); return false; }
-            if (!form.address) { toast.error("Informe seu endereço"); return false; }
-            if (!form.number) { toast.error("Informe o número"); return false; }
-            if (!form.district) { toast.error("Informe o bairro"); return false; }
-            if (!form.city) { toast.error("Informe sua cidade"); return false; }
-            if (!form.state) { toast.error("Informe o estado"); return false; }
-            if (!form.phone || form.phone.replace(/\D/g, "").length < 10) { toast.error("Celular inválido"); return false; }
-            return true;
+            return await trigger(["cep", "address", "number", "district", "city", "state", "phone"]);
         }
         if (s === 2) {
-            if (!form.username || form.username.length < 3) { toast.error("Nome de usuário muito curto"); return false; }
-            // Skip password validation if Google Auth
-            if (!isGoogleAuth) {
-                if (!form.password || form.password.length < 6) { toast.error("Senha deve ter 6+ caracteres"); return false; }
-            }
-            if (!form.acceptTerms) { toast.error("Aceite os termos para continuar"); return false; }
-            return true;
+            const fields: (keyof RegisterFormData)[] = ["username", "acceptTerms"];
+            if (!isGoogleAuth) fields.push("password");
+            return await trigger(fields);
         }
         return true;
     };
 
-    const next = () => {
-        if (step >= 0 && !validateStep(step)) return;
+    const next = async () => {
+        if (step >= 0) {
+            const isValid = await validateStep(step);
+            if (!isValid) return;
+        }
         setStep(prev => Math.min(prev + 1, 2) as any);
     };
     const prev = () => setStep(prev => Math.max(prev - 1, -1) as any);
 
-    const handleSubmit = async () => {
-        if (!validateStep(2)) return;
+    const onSubmit = async (data: RegisterFormData) => {
         setIsSubmitting(true);
         try {
             if (isGoogleAuth) {
-                // Google Auth: user already created, just save profile data
                 if (user?.id) {
-                    await api.updateProfile(user.id, {
-                        cpf: form.cpf,
-                        birthDate: form.birthDate,
-                        gender: form.gender,
-                        address: form.address,
-                        number: form.number,
-                        district: form.district,
-                        city: form.city,
-                        state: form.state,
-                        cep: form.cep,
-                        country: form.country,
-                        phone: form.phone,
-                        username: form.username,
-                    });
-                    // Update context — single source of truth
+                    await api.updateProfile(user.id, data);
                     updateUser({
+                        ...data,
                         profile_complete: true,
-                        cpf: form.cpf,
-                        address: form.address,
-                        number: form.number,
-                        district: form.district,
-                        city: form.city,
-                        state: form.state,
-                        cep: form.cep,
                     });
                 }
                 toast.success("Perfil completo e conta criada! 🎉");
                 navigate("/");
             } else {
-                const result = await registerUser(form.email, form.password);
+                const result = await registerUser(data.email, data.password || "");
                 if (result.success) {
-                    // After registration, save profile data
-                    const sessionData = JSON.parse(localStorage.getItem("luckynft_session") || "{}");
-                    if (sessionData.id) {
+                    const sessionUser = storage.getUser();
+                    if (sessionUser?.id) {
                         try {
-                            await api.updateProfile(sessionData.id, {
-                                cpf: form.cpf,
-                                birthDate: form.birthDate,
-                                gender: form.gender,
-                                address: form.address,
-                                number: form.number,
-                                district: form.district,
-                                city: form.city,
-                                state: form.state,
-                                cep: form.cep,
-                                country: form.country,
-                                phone: form.phone,
-                                username: form.username,
-                            });
-
-                            // Update context — single source of truth
+                            await api.updateProfile(sessionUser.id, data);
                             updateUser({
+                                ...data,
                                 profile_complete: true,
-                                cpf: form.cpf,
-                                address: form.address,
-                                number: form.number,
-                                district: form.district,
-                                city: form.city,
-                                state: form.state,
-                                cep: form.cep,
                             });
                         } catch (profileErr) {
                             console.warn("Profile save failed, continuing:", profileErr);
@@ -353,9 +279,8 @@ const Register: React.FC = () => {
                 if (view === 'login') {
                     navigate("/");
                 } else {
-                    // Register flow: check if profile is already complete
-                    const userData = JSON.parse(localStorage.getItem("luckynft_session") || "{}");
-                    if (userData.profile_complete) {
+                    const sessionUser = storage.getUser();
+                    if (sessionUser?.profile_complete) {
                         toast.success("Perfil já completo! Redirecionando...");
                         navigate("/");
                     } else {
@@ -367,12 +292,12 @@ const Register: React.FC = () => {
         } catch { toast.error("Falha no login com Google"); }
     };
 
-    // Sync email from context if Google Auth is active and form email is empty
-    React.useEffect(() => {
-        if (isGoogleAuth && user?.email && !form.email) {
-            setForm(f => ({ ...f, email: user.email, confirmEmail: user.email }));
+    useEffect(() => {
+        if (isGoogleAuth && user?.email) {
+            setValue("email", user.email);
+            setValue("confirmEmail", user.email);
         }
-    }, [isGoogleAuth, user]);
+    }, [isGoogleAuth, user, setValue]);
 
     // ─── Step Content ─────────────────────────────────────
     const renderStep = () => {
@@ -583,19 +508,18 @@ const Register: React.FC = () => {
                         Maybe disable readOnly to allow correction if needed, but Google email is usually fixed for the account.
                     */}
                     <div className={isGoogleAuth ? "opacity-70 pointer-events-none" : ""}>
-                        <Field icon={<Mail className="w-4 h-4" />} label="E-mail" id="email" placeholder="seu@email.com" value={form.email} onChange={v => set("email", v)} type="email" />
+                        <Field icon={<Mail className="w-4 h-4" />} label="E-mail" id="email" placeholder="seu@email.com" value={watch("email")} onChange={v => setValue("email", v)} type="email" error={errors.email?.message} />
                     </div>
-                    {/* Hide Confirm Email if Google Auth, redundant */}
                     {!isGoogleAuth && (
-                        <Field icon={<Mail className="w-4 h-4" />} label="Confirmar E-mail" id="confirmEmail" placeholder="seu@email.com" value={form.confirmEmail} onChange={v => set("confirmEmail", v)} type="email" />
+                        <Field icon={<Mail className="w-4 h-4" />} label="Confirmar E-mail" id="confirmEmail" placeholder="seu@email.com" value={watch("confirmEmail")} onChange={v => setValue("confirmEmail", v)} type="email" error={errors.confirmEmail?.message} />
                     )}
 
-                    <Field icon={<Calendar className="w-4 h-4" />} label="Data de Nascimento" id="birthDate" placeholder="DD/MM/AAAA" value={form.birthDate} onChange={v => set("birthDate", maskDate(v))} />
-                    <Field icon={<CreditCard className="w-4 h-4" />} label="CPF" id="cpf" placeholder="000.000.000-00" value={form.cpf} onChange={v => set("cpf", maskCPF(v))} />
+                    <Field icon={<Calendar className="w-4 h-4" />} label="Data de Nascimento" id="birthDate" placeholder="DD/MM/AAAA" value={watch("birthDate")} onChange={v => setValue("birthDate", maskDate(v))} error={errors.birthDate?.message} />
+                    <Field icon={<CreditCard className="w-4 h-4" />} label="CPF" id="cpf" placeholder="000.000.000-00" value={watch("cpf")} onChange={v => setValue("cpf", maskCPF(v))} error={errors.cpf?.message} />
                     <div className="space-y-1.5">
                         <Label className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Gênero</Label>
-                        <Select value={form.gender} onValueChange={v => set("gender", v)}>
-                            <SelectTrigger className="h-12 rounded-xl border border-input bg-background/50 text-foreground focus:ring-1 focus:ring-primary focus:border-primary">
+                        <Select value={watch("gender")} onValueChange={v => setValue("gender", v)}>
+                            <SelectTrigger className={`h-12 rounded-xl border ${errors.gender ? 'border-destructive' : 'border-input'} bg-background/50 text-foreground focus:ring-1 focus:ring-primary focus:border-primary`}>
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent className="bg-card border-border text-foreground">
@@ -604,6 +528,7 @@ const Register: React.FC = () => {
                                 <SelectItem value="outro">Outro</SelectItem>
                             </SelectContent>
                         </Select>
+                        {errors.gender && <p className="text-[10px] text-destructive font-medium pl-1">{errors.gender.message}</p>}
                     </div>
                 </motion.div>
             );
@@ -624,31 +549,32 @@ const Register: React.FC = () => {
                                 {cepLoading ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <MapPin className="w-4 h-4" />}
                             </span>
                             <input
-                                id="cep" type="text" placeholder="00000-000" value={form.cep}
+                                id="cep" type="text" placeholder="00000-000" value={watch("cep")}
                                 onChange={e => {
                                     const v = maskCEP(e.target.value);
-                                    set("cep", v);
+                                    setValue("cep", v);
                                 }}
                                 onBlur={handleBlurCep}
-                                className="w-full h-12 pl-11 pr-4 rounded-xl border border-input bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-medium"
+                                className={`w-full h-12 pl-11 pr-4 rounded-xl border ${errors.cep ? 'border-destructive' : 'border-input'} bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-medium`}
                             />
+                            {errors.cep && <p className="text-[10px] text-destructive font-medium pl-1 mt-1">{errors.cep.message}</p>}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-[1fr,100px] gap-4">
-                        <Field icon={<MapPin className="w-4 h-4" />} label="Endereço (Rua)" id="address" placeholder="Rua da Sorte" value={form.address} onChange={v => set("address", v)} />
-                        <Field icon={<MapPin className="w-4 h-4" />} label="Número" id="number" placeholder="123" value={form.number} onChange={v => set("number", v)} />
+                        <Field icon={<MapPin className="w-4 h-4" />} label="Endereço (Rua)" id="address" placeholder="Rua da Sorte" value={watch("address")} onChange={v => setValue("address", v)} error={errors.address?.message} />
+                        <Field icon={<MapPin className="w-4 h-4" />} label="Número" id="number" placeholder="123" value={watch("number")} onChange={v => setValue("number", v)} error={errors.number?.message} />
                     </div>
 
-                    <Field icon={<MapPin className="w-4 h-4" />} label="Bairro" id="district" placeholder="Centro" value={form.district} onChange={v => set("district", v)} />
+                    <Field icon={<MapPin className="w-4 h-4" />} label="Bairro" id="district" placeholder="Centro" value={watch("district")} onChange={v => setValue("district", v)} error={errors.district?.message} />
 
                     <div className="grid grid-cols-[1fr,80px] gap-4">
-                        <Field icon={<MapPin className="w-4 h-4" />} label="Cidade" id="city" placeholder="Sua cidade" value={form.city} onChange={v => set("city", v)} />
-                        <Field icon={<MapPin className="w-4 h-4" />} label="Estado" id="state" placeholder="UF" value={form.state} onChange={v => set("state", v)} />
+                        <Field icon={<MapPin className="w-4 h-4" />} label="Cidade" id="city" placeholder="Sua cidade" value={watch("city")} onChange={v => setValue("city", v)} error={errors.city?.message} />
+                        <Field icon={<MapPin className="w-4 h-4" />} label="Estado" id="state" placeholder="UF" value={watch("state")} onChange={v => setValue("state", v)} error={errors.state?.message} />
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">País</Label>
-                        <Select value={form.country} onValueChange={v => set("country", v)}>
+                        <Select value={watch("country")} onValueChange={v => setValue("country", v)}>
                             <SelectTrigger className="h-12 rounded-xl border border-input bg-background/50 text-foreground focus:ring-1 focus:ring-primary focus:border-primary">
                                 <SelectValue />
                             </SelectTrigger>
@@ -659,7 +585,7 @@ const Register: React.FC = () => {
                             </SelectContent>
                         </Select>
                     </div>
-                    <Field icon={<Smartphone className="w-4 h-4" />} label="Celular" id="phone" placeholder="(00) 90000-0000" value={form.phone} onChange={v => set("phone", maskPhone(v))} type="tel" />
+                    <Field icon={<Smartphone className="w-4 h-4" />} label="Celular" id="phone" placeholder="(00) 90000-0000" value={watch("phone")} onChange={v => setValue("phone", maskPhone(v))} type="tel" error={errors.phone?.message} />
                 </motion.div>
             );
         }
@@ -670,14 +596,14 @@ const Register: React.FC = () => {
                     <h2 className="text-xl font-extrabold text-foreground">Defina seu acesso 🏆</h2>
                     <p className="text-muted-foreground text-xs">Crie seu login e comece a ganhar!</p>
                 </div>
-                <Field icon={<User className="w-4 h-4" />} label="Nome de Usuário" id="username" placeholder="ReiDoBicho2024" value={form.username} onChange={v => set("username", v)} />
+                <Field icon={<User className="w-4 h-4" />} label="Nome de Usuário" id="username" placeholder="ReiDoBicho2024" value={watch("username")} onChange={v => setValue("username", v)} error={errors.username?.message} />
 
-                {/* Hide password for Google Auth */}
                 {!isGoogleAuth && (
                     <Field
                         icon={<Lock className="w-4 h-4" />} label="Senha" id="password" placeholder="••••••••"
-                        value={form.password} onChange={v => set("password", v)}
+                        value={watch("password") || ""} onChange={v => setValue("password", v)}
                         type={showPassword ? "text" : "password"}
+                        error={errors.password?.message}
                         rightIcon={
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground hover:text-foreground">
                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -686,24 +612,25 @@ const Register: React.FC = () => {
                     />
                 )}
 
-                <Field icon={<Gift className="w-4 h-4" />} label="Código Promocional (opcional)" id="promo" placeholder="BONUS2024" value={form.promoCode} onChange={v => set("promoCode", v)} />
+                <Field icon={<Gift className="w-4 h-4" />} label="Código Promocional (opcional)" id="promo" placeholder="BONUS2024" value={watch("promoCode") || ""} onChange={v => setValue("promoCode", v)} />
 
                 <div className="space-y-3 pt-2">
                     <label className="flex items-start gap-3 cursor-pointer">
                         <Checkbox
-                            checked={form.acceptTerms}
-                            onCheckedChange={v => set("acceptTerms", !!v)}
-                            className="mt-0.5 border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            checked={watch("acceptTerms")}
+                            onCheckedChange={v => setValue("acceptTerms", !!v)}
+                            className={`mt-0.5 border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary ${errors.acceptTerms ? 'border-destructive' : ''}`}
                         />
                         <span className="text-xs text-muted-foreground leading-relaxed">
                             Li e aceito os <a href="#" className="text-primary font-semibold hover:underline">Termos e Condições</a> e a{" "}
                             <a href="#" className="text-primary font-semibold hover:underline">Política de Privacidade</a>.
+                            {errors.acceptTerms && <p className="text-[10px] text-destructive font-medium">{errors.acceptTerms.message}</p>}
                         </span>
                     </label>
                     <label className="flex items-start gap-3 cursor-pointer">
                         <Checkbox
-                            checked={form.acceptBonus}
-                            onCheckedChange={v => set("acceptBonus", !!v)}
+                            checked={watch("acceptBonus")}
+                            onCheckedChange={v => setValue("acceptBonus", !!v)}
                             className="mt-0.5 border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                         <span className="text-xs text-muted-foreground leading-relaxed">
@@ -754,7 +681,7 @@ const Register: React.FC = () => {
                             ) : (
                                 <>
                                     <button
-                                        onClick={handleSubmit}
+                                        onClick={handleSubmit(onSubmit)}
                                         disabled={isSubmitting}
                                         className="w-full h-13 rounded-xl bg-primary text-primary-foreground font-extrabold text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-[0.98] transition-all shadow-glow disabled:opacity-50 py-3.5"
                                     >
