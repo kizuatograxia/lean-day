@@ -4,6 +4,7 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import WalletDrawer from "./WalletDrawer";
 import { SupportWidget } from "./SupportWidget";
+import MobileBottomNav from "./MobileBottomNav";
 
 const MainLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,6 +31,7 @@ const MainLayout: React.FC = () => {
                 <Outlet context={{ activeCategory, setActiveCategory }} />
             </main>
             <SupportWidget />
+            <MobileBottomNav />
         </div>
     );
 };

@@ -39,7 +39,7 @@ const Header: FC<HeaderProps> = ({ onMenuClick, onWalletClick }) => {
               variant="icon"
               size="icon"
               onClick={onMenuClick}
-              className="md:hidden"
+              className="hidden"
               aria-label="Abrir menu"
             >
               <Menu className="h-5 w-5" />
