@@ -64,13 +64,17 @@ export const NFTCard = React.memo(NFTCardComponent, (prev, next) => {
 const s = StyleSheet.create({
     card: {
         flex: 1,
-        backgroundColor: 'rgba(17, 24, 39, 0.7)', // Semi-transparent like Web glass
-        borderRadius: 16,
+        backgroundColor: 'rgba(20, 24, 39, 0.65)', // Polished glass
+        borderRadius: 20,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(31, 41, 55, 0.8)',
+        borderWidth: 1.5,
+        borderColor: 'rgba(56, 189, 248, 0.15)', // Subtle cyan border highlight
         margin: 6,
-        height: 190,
+        height: 195,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
     },
     rarityContainer: {
         position: 'absolute',

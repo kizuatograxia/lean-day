@@ -1,151 +1,118 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
 import { Raffle } from '../types/raffle';
-import { Clock, Ticket } from 'lucide-react-native';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
 interface RaffleCardProps {
     raffle: Raffle;
 }
 
+/**
+ * EXACT WEB PARITY RAFFLE CARD (Mobile Layout)
+ * Mirrored from src/components/RaffleCard.tsx (Mobile view)
+ * Minimalist design: 4:5 Image, Prize Badge, Title. No clutter.
+ */
 const RaffleCardComponent = ({ raffle }: RaffleCardProps) => {
     const router = useRouter();
-    const progress = Math.min((raffle.participantes / raffle.maxParticipantes) * 100, 100);
-    const custo = typeof raffle.custoNFT === 'number' ? raffle.custoNFT.toFixed(2) : '0.00';
-    const imageUri = raffle.imagem || raffle.image_urls?.[0] || 'https://placehold.co/600x400/111827/00FF8C';
-    const isAlmostFull = progress >= 80;
-
-    let endDate: Date;
-    try { endDate = new Date(raffle.dataFim); }
-    catch { endDate = new Date(); }
-
-    const pulse = useSharedValue(1);
-
-    React.useEffect(() => {
-        if (isAlmostFull) {
-            pulse.value = withRepeat(
-                withSequence(
-                    withTiming(1.05, { duration: 600 }),
-                    withTiming(1, { duration: 600 })
-                ),
-                -1,
-                true
-            );
-        } else {
-            pulse.value = 1;
-        }
-    }, [isAlmostFull]);
-
-    const animatedProgressStyle = useAnimatedStyle(() => ({
-        transform: [{ scaleY: pulse.value }],
-        opacity: isAlmostFull ? pulse.value : 1,
-    }));
+    const premioValor = raffle.premioValor ? `R$ ${raffle.premioValor.toLocaleString('pt-BR')}` : raffle.premio;
+    const imageUri = raffle.imagem || raffle.image_urls?.[0] || 'https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80';
 
     return (
         <TouchableOpacity
-            activeOpacity={0.9}
+            activeOpacity={0.8}
             onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push(`/raffle/${raffle.id}`);
             }}
             style={styles.container}
-            accessibilityLabel={`Sorteio ${raffle.titulo}. Prêmio: ${raffle.premio}. Valor da cota: R$ ${custo}`}
-            accessibilityRole="button"
         >
             <View style={styles.card}>
-                {/* Image */}
+                {/* Prize Value Badge (top-2 right-2) */}
+                <View style={styles.rewardBadge}>
+                    <Text style={styles.rewardText}>{premioValor}</Text>
+                </View>
+
+                {/* Image Container (aspect-[4/5] bg-background p-3) */}
                 <View style={styles.imageContainer}>
                     <Image
                         source={{ uri: imageUri }}
                         style={styles.image}
                         resizeMode="cover"
                     />
-                    <LinearGradient
-                        colors={['transparent', 'rgba(10,11,18,0.95)']}
-                        style={styles.gradient}
-                    />
-                    {/* Price badge */}
-                    <View style={styles.priceBadge}>
-                        <Text style={styles.priceText}>R$ {custo}</Text>
-                    </View>
-                    {/* Category badge */}
-                    <View style={styles.categoryBadge}>
-                        <Text style={styles.categoryText}>{raffle.categoria?.toUpperCase() || 'TECH'}</Text>
-                    </View>
                 </View>
 
-                {/* Content */}
+                {/* Content Preview (Always visible p-3) */}
                 <View style={styles.content}>
-                    <Text style={styles.title} numberOfLines={1}>{raffle.titulo}</Text>
-                    <Text style={styles.prize} numberOfLines={1}>{raffle.premio}</Text>
-
-                    <View style={styles.meta}>
-                        <View style={styles.metaItem}>
-                            <Ticket size={13} color="#4b5563" />
-                            <Text style={styles.metaText}>
-                                {raffle.participantes}/{raffle.maxParticipantes} cotas
-                            </Text>
-                        </View>
-                        <View style={styles.metaItem}>
-                            <Clock size={13} color="#4b5563" />
-                            <Text style={styles.metaText}>
-                                {formatDistanceToNow(endDate, { locale: ptBR, addSuffix: true })}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Progress bar */}
-                    <View style={styles.progressBg}>
-                        <Animated.View
-                            style={[
-                                styles.progressFill,
-                                { width: `${progress}%` as any },
-                                isAlmostFull && styles.progressFillHot,
-                                isAlmostFull && animatedProgressStyle,
-                            ]}
-                        />
-                    </View>
-                    <Text style={[styles.progressLabel, isAlmostFull && styles.progressLabelHot]}>
-                        {progress.toFixed(0)}% preenchido{isAlmostFull ? ' — quase esgotado!' : ''}
+                    <Text style={styles.title} numberOfLines={2}>
+                        {raffle.titulo}
                     </Text>
                 </View>
             </View>
         </TouchableOpacity>
     );
-}
+};
 
 const styles = StyleSheet.create({
-    container: { marginBottom: 16 },
-    card: { backgroundColor: '#111827', borderRadius: 20, borderWidth: 1, borderColor: '#1f2937', overflow: 'hidden' },
-    imageContainer: { height: 200, position: 'relative' },
-    image: { width: '100%', height: '100%' },
-    gradient: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
-    priceBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: '#00FF8C', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-    priceText: { color: '#0A0B12', fontWeight: '800', fontSize: 13 },
-    categoryBadge: { position: 'absolute', top: 12, left: 12, backgroundColor: 'rgba(10,11,18,0.7)', borderWidth: 1, borderColor: '#1f2937', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-    categoryText: { color: '#6b7280', fontWeight: '700', fontSize: 9, letterSpacing: 1 },
-    content: { padding: 16 },
-    title: { color: '#f9fafb', fontSize: 18, fontWeight: '800', marginBottom: 2 },
-    prize: { color: '#00FF8C', fontSize: 13, fontWeight: '600', marginBottom: 12 },
-    meta: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    metaText: { color: '#4b5563', fontSize: 12 },
-    progressBg: { height: 4, backgroundColor: '#1f2937', borderRadius: 2, overflow: 'hidden', marginBottom: 6 },
-    progressFill: { height: '100%', backgroundColor: '#00FF8C', borderRadius: 2 },
-    progressFillHot: { backgroundColor: '#f97316' },
-    progressLabel: { color: '#4b5563', fontSize: 11 },
-    progressLabelHot: { color: '#f97316' },
+    container: {
+        flex: 1,
+        margin: 6,
+    },
+    card: {
+        backgroundColor: '#111827', // bg-card
+        borderRadius: 16, // rounded-2xl
+        borderWidth: 1,
+        borderColor: '#1f2937', // border-border
+        overflow: 'hidden',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+    },
+    // Web: absolute top-2 right-2 z-10 glass-card px-1.5 py-0.5 rounded-md text-[10px] font-bold
+    rewardBadge: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 10,
+        backgroundColor: 'rgba(20, 24, 39, 0.85)', // glass approximation
+        borderRadius: 6,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    rewardText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 10
+    },
+    // Web: relative w-full aspect-[4/5] overflow-hidden bg-background p-3
+    imageContainer: {
+        width: '100%',
+        aspectRatio: 4 / 5,
+        backgroundColor: '#0A0B12', // bg-background
+        padding: 12, // p-3
+    },
+    // Web: w-full h-full object-cover rounded-xl
+    image: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 12, // rounded-xl
+    },
+    // Web: p-3 flex-1 flex flex-col justify-end
+    content: {
+        padding: 12,
+        flex: 1,
+        justifyContent: 'flex-end'
+    },
+    // Web: font-bold text-sm text-foreground leading-tight line-clamp-2
+    title: {
+        color: '#f9fafb', // text-foreground
+        fontSize: 14, // text-sm
+        fontWeight: '700', // font-bold
+        lineHeight: 18, // leading-tight
+    },
 });
 
 export const RaffleCard = React.memo(RaffleCardComponent, (prev, next) => {
-    return (
-        prev.raffle.id === next.raffle.id &&
-        prev.raffle.participantes === next.raffle.participantes &&
-        prev.raffle.status === next.raffle.status
-    );
+    return prev.raffle.id === next.raffle.id;
 });

@@ -131,7 +131,9 @@ export default function Home() {
                         </Text>
                     </View>
                 ) : (
-                    filtered.map(raffle => <RaffleCard key={raffle.id} raffle={raffle} />)
+                    <View style={styles.raffleGrid}>
+                        {filtered.map(raffle => <RaffleCard key={raffle.id} raffle={raffle} />)}
+                    </View>
                 )}
             </ScrollView>
         </ScreenWrapper>
@@ -145,12 +147,13 @@ const styles = StyleSheet.create({
     heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,255,140,0.1)', borderWidth: 1, borderColor: 'rgba(0,255,140,0.3)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
     liveIndicator: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00FF8C' },
     liveText: { color: '#00FF8C', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-    statsRow: { flexDirection: 'row', backgroundColor: '#111827', borderRadius: 16, borderWidth: 1, borderColor: '#1f2937', overflow: 'hidden' },
+    statsRow: { flexDirection: 'row', backgroundColor: 'rgba(17, 24, 39, 0.6)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(31, 41, 55, 0.5)', overflow: 'hidden' },
     statCard: { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 4 },
     statValue: { color: '#f9fafb', fontSize: 16, fontWeight: '800' },
-    statLabel: { color: '#4b5563', fontSize: 10, fontWeight: '500' },
-    statDivider: { width: 1, backgroundColor: '#1f2937', marginVertical: 12 },
+    statLabel: { color: '#6b7280', fontSize: 10, fontWeight: '500' },
+    statDivider: { width: 1, backgroundColor: 'rgba(31, 41, 55, 0.5)', marginVertical: 12 },
     searchContainer: { marginHorizontal: 16, marginBottom: 8, position: 'relative' },
-    searchInput: { backgroundColor: '#111827', borderWidth: 1, borderColor: '#1f2937', borderRadius: 12, paddingLeft: 40, paddingRight: 14, paddingVertical: 12, color: '#f9fafb', fontSize: 14 },
+    searchInput: { backgroundColor: 'rgba(17, 24, 39, 0.6)', borderWidth: 1, borderColor: 'rgba(31, 41, 55, 0.5)', borderRadius: 12, paddingLeft: 40, paddingRight: 14, paddingVertical: 12, color: '#f9fafb', fontSize: 14 },
     skeletonCard: { backgroundColor: '#111827', borderRadius: 20, borderWidth: 1, borderColor: '#1f2937', overflow: 'hidden' },
+    raffleGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
 });

@@ -22,6 +22,7 @@ export default function RaffleDetailsScreen() {
     const { user } = useAuth();
     const [quantity, setQuantity] = useState(1);
     const [joining, setJoining] = useState(false);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
 
     const { data: raffle, isLoading } = useQuery({
         queryKey: ['raffle', id],
@@ -153,7 +154,26 @@ export default function RaffleDetailsScreen() {
                 {raffle.descricao ? (
                     <View style={s.descSection}>
                         <Text style={s.sectionTitle}>Sobre o Prêmio</Text>
-                        <Text style={s.descText}>{raffle.descricao}</Text>
+                        <Text
+                            style={s.descText}
+                            numberOfLines={isDescExpanded ? undefined : 3}
+                        >
+                            {raffle.descricao}
+                        </Text>
+                        {raffle.descricao.length > 120 && (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                    setIsDescExpanded(!isDescExpanded);
+                                }}
+                                style={s.readMoreBtn}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={s.readMoreText}>
+                                    {isDescExpanded ? 'Ver menos' : 'Ver mais'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : null}
 
@@ -238,6 +258,8 @@ const s = StyleSheet.create({
     descSection: { marginBottom: 20 },
     sectionTitle: { color: '#f9fafb', fontSize: 16, fontWeight: '700', marginBottom: 8 },
     descText: { color: '#6b7280', fontSize: 14, lineHeight: 22 },
+    readMoreBtn: { marginTop: 6, alignSelf: 'flex-start', paddingVertical: 4 },
+    readMoreText: { color: '#00FF8C', fontSize: 13, fontWeight: '700' },
     guaranteeRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(0,255,140,0.06)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(0,255,140,0.2)', marginBottom: 20 },
     guaranteeText: { color: '#9ca3af', fontSize: 13, flex: 1 },
     checkoutBar: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, paddingBottom: 32, backgroundColor: '#0d101a', borderTopWidth: 1, borderTopColor: '#1f2937' },
