@@ -1,0 +1,16 @@
+﻿app/(tabs)/_layout.tsx(20,64): error TS2322: Type '{ size: number; color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+app/(tabs)/_layout.tsx(27,66): error TS2322: Type '{ size: number; color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+app/(tabs)/_layout.tsx(34,64): error TS2322: Type '{ size: number; color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+app/raffle/[id].tsx(63,32): error TS2322: Type '{ color: string; size: number; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+app/raffle/[id].tsx(95,32): error TS2322: Type '{ color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+app/raffle/[id].tsx(106,31): error TS2322: Type '{ color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+components/RaffleCard.tsx(46,47): error TS2322: Type '{ size: number; color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
+components/RaffleCard.tsx(52,46): error TS2322: Type '{ size: number; color: string; }' is not assignable to type 'IntrinsicAttributes & LucideProps'.
+  Property 'color' does not exist on type 'IntrinsicAttributes & LucideProps'.
