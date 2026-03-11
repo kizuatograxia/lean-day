@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Raffle } from '../types/raffle';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Raffle3dModel } from './raffle/Raffle3dModel';
 
 interface RaffleCardProps {
     raffle: Raffle;
@@ -17,6 +18,9 @@ const RaffleCardComponent = ({ raffle }: RaffleCardProps) => {
     const router = useRouter();
     const premioValor = raffle.premioValor ? `R$ ${raffle.premioValor.toLocaleString('pt-BR')}` : raffle.premio;
     const imageUri = raffle.imagem || raffle.image_urls?.[0] || 'https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80';
+
+    // Check if raffle targets a 3D model
+    const is3D = raffle.titulo?.toLowerCase().includes('arara') || imageUri.includes('.glb');
 
     return (
         <TouchableOpacity
@@ -34,12 +38,18 @@ const RaffleCardComponent = ({ raffle }: RaffleCardProps) => {
                 </View>
 
                 {/* Image Container (aspect-[4/5] bg-background p-3) */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={{ uri: imageUri }}
-                        style={styles.image}
-                        resizeMode="cover"
-                    />
+                <View style={[styles.imageContainer, is3D && { padding: 0, justifyContent: 'center' }]}>
+                    {is3D ? (
+                        <View pointerEvents="none" style={{ flex: 1 }}>
+                            <Raffle3dModel />
+                        </View>
+                    ) : (
+                        <Image
+                            source={{ uri: imageUri }}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+                    )}
                 </View>
 
                 {/* Content Preview (Always visible p-3) */}
