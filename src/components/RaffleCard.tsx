@@ -7,6 +7,7 @@ import { useUserRaffles } from "@/contexts/UserRafflesContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CountdownBadge } from "@/components/CountdownBadge";
+import { Raffle3dModel } from "@/components/Raffle3dModel";
 
 interface RaffleCardProps {
     raffle: Raffle;
@@ -21,6 +22,9 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
     const totalNFTs = getTotalNFTs();
     const alreadyParticipating = isParticipating(raffle.id);
     const [isExpandedOnMobile, setIsExpandedOnMobile] = useState(false);
+
+    const imageUri = raffle.imagem || "https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80";
+    const is3D = raffle.titulo?.toLowerCase().includes("arara") || imageUri.includes(".glb");
 
     const handleCardClick = () => {
         if (disableNavigation) return;
@@ -80,16 +84,22 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
                 </div>
 
                 {/* Image Container */}
-                <div className="relative w-full aspect-[4/5] md:aspect-auto overflow-hidden bg-background p-3 md:p-4">
-                    <img
-                        src={raffle.imagem}
-                        alt={raffle.titulo}
-                        className="w-full h-full md:h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80";
-                        }}
-                    />
+                <div className={`relative w-full aspect-[4/5] md:aspect-auto overflow-hidden bg-background ${is3D ? 'p-0 flex items-center justify-center' : 'p-3 md:p-4'}`}>
+                    {is3D ? (
+                        <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                            <Raffle3dModel url="/glb/arara.glb" />
+                        </div>
+                    ) : (
+                        <img
+                            src={raffle.imagem}
+                            alt={raffle.titulo}
+                            className="w-full h-full md:h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                            onError={(e) => {
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1635326444826-06c8f8d2e61d?w=800&q=80";
+                            }}
+                        />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                     {/* Winner Overlay */}
