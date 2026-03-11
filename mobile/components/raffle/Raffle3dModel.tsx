@@ -24,7 +24,7 @@ function Model() {
 
     return (
         <group ref={modelRef} dispose={null}>
-            <primitive object={scene} scale={2} position={[0, -1, 0]} />
+            <primitive object={scene} scale={2.8} position={[0, -1.8, 0]} />
         </group>
     );
 }
@@ -33,7 +33,7 @@ export function Raffle3dModel() {
     return (
         <View style={s.container}>
             <Canvas
-                camera={{ position: [0, 0, 5], fov: 45 }}
+                camera={{ position: [0, 0, 4.5], fov: 45 }}
                 style={s.canvas}
             >
                 {/* Responsive Lighting setup safe for Mobile GPU */}
