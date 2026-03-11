@@ -1,54 +1,116 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Animated } from 'react-native';
-import Svg, { Rect, Defs, Pattern } from 'react-native-svg';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const { width, height } = Dimensions.get('window');
-
 /**
- * TRUE WEB-PARITY BACKGROUND "MEMPOOL"
- * Mirrors MempoolBackground.tsx exactly:
+ * TRUE WEB-PARITY BACKGROUND "MEMPOOL" (HTML5 Canvas injected via WebView)
+ * Mirrors MempoolBackground.tsx exactly by running the identical Web JS Engine Math:
  * - 16px squares, 2px gap (18px step)
  * - HSL(160-200, 80%, 55%) color range
- * - Pulse animation with random grid-snapped blocks
+ * - Pulse animation running on Web Thread maintaining 60 FPS
  */
 export const DecorativeBackground = React.memo(() => {
-    const cellSize = 16;
-    const gap = 2;
-    const step = cellSize + gap;
+    // The exact Javascript from `MempoolBackground.tsx` injected into HTML format
+    const mempoolHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                html, body { 
+                    margin: 0; padding: 0; width: 100%; height: 100%; 
+                    background-color: #0A0B12; overflow: hidden;
+                }
+                canvas { display: block; width: 100vw; height: 100vh; }
+            </style>
+        </head>
+        <body>
+            <canvas id="mempoolCanvas"></canvas>
+            <script>
+                const canvas = document.getElementById("mempoolCanvas");
+                const ctx = canvas.getContext("2d");
+                
+                let blocks = [];
+                let w = 0, h = 0;
+
+                function init() {
+                    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    w = window.innerWidth;
+                    h = window.innerHeight;
+                    
+                    canvas.width = w * dpr;
+                    canvas.height = h * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    const gap = 2;
+                    const cellSize = 16;
+                    const step = cellSize + gap;
+                    const cols = Math.ceil(w / step) + 1;
+                    const rows = Math.ceil(h / step) + 1;
+                    
+                    blocks = [];
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            blocks.push({
+                                x: c * step,
+                                y: r * step,
+                                size: cellSize,
+                                opacity: 0.03 + Math.random() * 0.12,
+                                targetOpacity: 0.03 + Math.random() * 0.12,
+                                hue: 160 + Math.random() * 40,
+                            });
+                        }
+                    }
+                }
+
+                init();
+                window.addEventListener('resize', init);
+
+                setInterval(() => {
+                    const count = Math.floor(blocks.length * 0.05);
+                    for (let i = 0; i < count; i++) {
+                        const idx = Math.floor(Math.random() * blocks.length);
+                        blocks[idx].targetOpacity = 0.15 + Math.random() * 0.4;
+                    }
+                    for (let i = 0; i < blocks.length; i++) {
+                        if (Math.random() > 0.85) {
+                            blocks[i].targetOpacity = 0.02 + Math.random() * 0.08;
+                        }
+                    }
+                }, 1200);
+
+                function draw() {
+                    ctx.clearRect(0, 0, w, h);
+                    for (const b of blocks) {
+                        b.opacity += (b.targetOpacity - b.opacity) * 0.05;
+                        ctx.fillStyle = \`hsla(\${b.hue}, 80%, 55%, \${b.opacity})\`;
+                        ctx.fillRect(b.x, b.y, b.size, b.size);
+                    }
+                    requestAnimationFrame(draw);
+                }
+                
+                requestAnimationFrame(draw);
+            </script>
+        </body>
+        </html>
+    `;
 
     return (
         <View style={s.container} pointerEvents="none">
-            {/* Deep base matching web --background dark */}
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0B12' }]} />
+            {/* The WebView provides the exact 1:1 Canvas execution without crippling React Native Native UI */}
+            <WebView
+                originWhitelist={['*']}
+                source={{ html: mempoolHTML }}
+                style={s.webview}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                bounces={false}
+                androidLayerType="hardware"
+            />
 
-            {/* STATIC GRID — identical to web canvas grid */}
-            <View style={StyleSheet.absoluteFill}>
-                <Svg width="100%" height="100%">
-                    <Defs>
-                        <Pattern
-                            id="mempoolGrid"
-                            x="0" y="0"
-                            width={step}
-                            height={step}
-                            patternUnits="userSpaceOnUse"
-                        >
-                            <Rect
-                                x="0" y="0"
-                                width={cellSize}
-                                height={cellSize}
-                                fill="hsla(160, 80%, 55%, 0.05)"
-                            />
-                        </Pattern>
-                    </Defs>
-                    <Rect width="100%" height="100%" fill="url(#mempoolGrid)" />
-                </Svg>
-            </View>
-
-            {/* DYNAMIC PULSE — grid-snapped pulsing blocks like web */}
-            <PulsingBlocks step={step} size={cellSize} />
-
-            {/* Bottom fade for tab bar readability */}
+            {/* Bottom fade overlay just like before to guarantee tab bar reading */}
             <LinearGradient
                 colors={['transparent', 'rgba(10, 11, 18, 0.8)', '#0A0B12']}
                 locations={[0, 0.6, 1]}
@@ -58,64 +120,14 @@ export const DecorativeBackground = React.memo(() => {
     );
 });
 
-const PulsingBlocks = ({ step, size }: { step: number; size: number }) => (
-    <View style={StyleSheet.absoluteFill}>
-        {Array.from({ length: 20 }).map((_, i) => (
-            <SinglePulse key={i} step={step} size={size} delay={i * 200} />
-        ))}
-    </View>
-);
-
-const SinglePulse = ({ step, size, delay }: { step: number; size: number; delay: number }) => {
-    const opacity = useRef(new Animated.Value(0)).current;
-    const [pos, setPos] = React.useState({ left: 0, top: 0 });
-
-    useEffect(() => {
-        const timeout = setTimeout(() => animate(), delay);
-        return () => clearTimeout(timeout);
-    }, []);
-
-    const animate = () => {
-        const cols = Math.floor(width / step);
-        const rows = Math.floor(height / step);
-        setPos({
-            left: Math.floor(Math.random() * cols) * step,
-            top: Math.floor(Math.random() * rows) * step,
-        });
-
-        Animated.sequence([
-            Animated.timing(opacity, {
-                toValue: 0.15 + Math.random() * 0.35,
-                duration: 1200 + Math.random() * 1200,
-                useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-                toValue: 0,
-                duration: 1200 + Math.random() * 1200,
-                useNativeDriver: true,
-            }),
-        ]).start(() => animate());
-    };
-
-    return (
-        <Animated.View
-            style={{
-                position: 'absolute',
-                left: pos.left,
-                top: pos.top,
-                width: size,
-                height: size,
-                backgroundColor: '#00FF8C',
-                opacity,
-            }}
-        />
-    );
-};
-
 const s = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        overflow: 'hidden',
+        backgroundColor: '#0A0B12',
+    },
+    webview: {
+        flex: 1,
+        backgroundColor: 'transparent',
     },
     bottomFade: {
         position: 'absolute',
