@@ -29,9 +29,6 @@ function Model({ url }: ModelProps) {
     );
 }
 
-// Preload the specific model we know we have to avoid jarring pops
-useGLTF.preload('/glb/arara.glb');
-
 export function Raffle3dModel({ url = '/glb/arara.glb' }: { url?: string }) {
     return (
         <div className="w-full h-full flex items-center justify-center bg-transparent pointer-events-none">

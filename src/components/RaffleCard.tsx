@@ -1,4 +1,4 @@
-import { useState, FC, MouseEvent } from "react";
+import { useState, FC, MouseEvent, Suspense, lazy } from "react";
 import { Clock, Users, Ticket, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Raffle } from "@/types/raffle";
@@ -7,7 +7,8 @@ import { useUserRaffles } from "@/contexts/UserRafflesContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CountdownBadge } from "@/components/CountdownBadge";
-import { Raffle3dModel } from "@/components/Raffle3dModel";
+
+const Raffle3dModel = lazy(() => import("@/components/Raffle3dModel").then(module => ({ default: module.Raffle3dModel })));
 
 interface RaffleCardProps {
     raffle: Raffle;
@@ -87,7 +88,9 @@ const RaffleCard: FC<RaffleCardProps> = ({ raffle, index, disableNavigation = fa
                 <div className={`relative w-full aspect-[4/5] md:aspect-auto overflow-hidden bg-background ${is3D ? 'p-0 flex items-center justify-center' : 'p-3 md:p-4'}`}>
                     {is3D ? (
                         <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                            <Raffle3dModel url="/glb/arara.glb" />
+                            <Suspense fallback={null}>
+                                <Raffle3dModel url="/glb/arara.glb" />
+                            </Suspense>
                         </div>
                     ) : (
                         <img
